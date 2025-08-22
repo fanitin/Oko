@@ -165,3 +165,9 @@
         @apply bg-background text-foreground;
     }
 }
+
+.container {
+    padding-left: 3rem;
+    padding-right: 3rem;
+    margin: 1rem auto;
+}
