@@ -4,13 +4,6 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from '@/compone
 import AppLogoSidebar from '@/components/custom/sidebar/AppLogoSidebar.vue';
 import SidebarHeaderSearch from '@/components/custom/sidebar/SidebarHeaderSearch.vue';
 import UserCard from '@/components/custom/sidebar/UserCard.vue';
-
-const uuuser = {
-    id: 1,
-    username: "bobux",
-    avatar: "",
-    online: true,
-}
 </script>
 
 <template>
@@ -18,7 +11,7 @@ const uuuser = {
         <SidebarHeader>
             <AppLogoSidebar/>
             <SidebarHeaderSearch/>
-            <UserCard :user="uuuser"/>
+            <UserCard/>
         </SidebarHeader>
 
         <SidebarContent>

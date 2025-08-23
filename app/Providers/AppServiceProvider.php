@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Http\Resources\UserResource;
 use Illuminate\Support\ServiceProvider;
+use Inertia\Inertia;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -11,7 +13,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+
     }
 
     /**
@@ -19,6 +21,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Inertia::share([
+            'auth' => fn() => [
+                'profileUser' => auth()->user() ? (new UserResource(auth()->user()->load('mainAvatar')))->resolve() : null,
+            ]
+        ]);
     }
 }

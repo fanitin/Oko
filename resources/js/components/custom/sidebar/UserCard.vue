@@ -1,18 +1,10 @@
 <script setup lang="ts">
 import { useSidebar } from '@/components/ui/sidebar';
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
 const { state } = useSidebar();
-
-const props = defineProps<{
-    user: {
-        id: number;
-        username: string;
-        avatar?: string;
-        online?: boolean;
-    };
-}>();
+const auth = usePage().props.auth;
 
 const isCollapsed = computed(() => state.value === 'collapsed');
 
@@ -28,8 +20,8 @@ const firstLetter = computed(() => (props.user.username ? props.user.username.ch
             ]"
         >
             <img
-                v-if="user.avatar"
-                :src="user.avatar"
+                v-if="user.main_avatar"
+                :src="user.main_avatar.path"
                 alt="avatar"
                 :class="[
                     'rounded-full border-2 border-gray-300 object-cover transition-all duration-200 dark:border-gray-700',

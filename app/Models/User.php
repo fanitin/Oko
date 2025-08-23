@@ -47,4 +47,15 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
         ];
     }
+
+
+    public function avatars()
+    {
+        return $this->hasMany(UserAvatar::class)->orderByDesc('is_main')->orderByDesc('updated_at');
+    }
+
+    public function mainAvatar()
+    {
+        return $this->hasOne(UserAvatar::class)->where('is_main', 1);
+    }
 }
