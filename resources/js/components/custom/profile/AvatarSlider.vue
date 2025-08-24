@@ -9,6 +9,7 @@ interface Avatar {
 
 const props = defineProps<{ avatars?: Avatar[] }>();
 
+const hoverIndex = ref<number | null>(null);
 const currentIndex = ref(0);
 const visibleAvatars = computed(() => props.avatars || []);
 const total = computed(() => visibleAvatars.value.length);
@@ -48,7 +49,7 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 
 <template>
     <div v-if="total" class="relative flex w-full items-center justify-center">
-        <div class="relative w-1/2 overflow-hidden rounded-md">
+        <div class="relative w-5/6 overflow-hidden rounded-md">
             <div class="flex transition-transform duration-500 ease-in-out" :style="{ transform: `translateX(${slideX}%)` }">
                 <div v-for="(avatar, index) in visibleAvatars" :key="avatar.id" class="relative aspect-square w-full flex-shrink-0">
                     <img :src="avatar.path" alt="avatar" class="h-full w-full rounded-md object-cover" />
@@ -90,15 +91,21 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
                 ›
             </button>
 
-            <div class="absolute bottom-0 left-0 flex w-full">
+            <div class="absolute bottom-0 left-0 flex w-full justify-center space-x-1">
                 <span
                     v-for="(_, idx) in total"
                     :key="idx"
+                    @mouseenter="hoverIndex = idx"
+                    @mouseleave="hoverIndex = null"
+                    @click="currentIndex = idx"
                     :class="[
-                        'h-1 transition-all',
-                        idx === currentIndex ? 'flex-1 bg-white dark:bg-purple-400' : 'flex-1 bg-white/30 dark:bg-purple-700/50',
+                        'h-1 flex-1 cursor-pointer rounded transition-all',
+                        idx === currentIndex
+                            ? 'bg-white dark:bg-purple-400'
+                            : hoverIndex === idx
+                              ? 'bg-white/70 dark:bg-purple-500/70'
+                              : 'bg-white/30 dark:bg-purple-700/50',
                     ]"
-                    class="mx-0.5"
                 ></span>
             </div>
         </div>

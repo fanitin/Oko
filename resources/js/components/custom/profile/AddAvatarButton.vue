@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import axios from 'axios';
+import MainButtonComponent from '@/components/custom/MainButtonComponent.vue';
 
 const fileInput = ref<HTMLInputElement | null>(null);
 const emit = defineEmits<{
@@ -36,12 +37,8 @@ function onFileSelected(event: Event) {
 <template>
     <div>
         <input type="file" ref="fileInput" class="hidden" @change="onFileSelected" accept="image/*" />
-
-        <button
-            class="rounded bg-emerald-500 px-4 py-2 text-white hover:bg-emerald-600 dark:bg-purple-600 dark:hover:bg-purple-700"
-            @click="openFileDialog"
-        >
+        <MainButtonComponent @click="openFileDialog">
             Add profile picture
-        </button>
+        </MainButtonComponent>
     </div>
 </template>

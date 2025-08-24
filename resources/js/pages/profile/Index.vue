@@ -41,11 +41,30 @@ function handleAvatarUploaded(payload: { success: boolean; message: string }) {
     <Head title="Profile" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="container flex justify-center">
-            <div>
-                <p class="text-4xl">Profile</p>
-                <AvatarSlider :avatars="user.avatars" />
-                <AddAvatarButton @avatarUploaded="handleAvatarUploaded"/>
+        <div class="flex justify-center mt-10">
+            <div class="w-full max-w-5xl flex gap-8">
+
+                <!-- Левая колонка: профиль/настройки -->
+                <div class="flex flex-col w-1/3 space-y-6">
+                    <!-- Никнейм -->
+                    <div class="flex flex-col space-y-2">
+                        <p class="text-2xl font-semibold">Fanitin</p>
+                        <button class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 text-sm">Изменить никнейм</button>
+                    </div>
+
+                    <!-- Настройки -->
+                    <div class="flex flex-col space-y-2">
+                        <button class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Настройка 1</button>
+                        <button class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Настройка 2</button>
+                        <button class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Настройка 3</button>
+                    </div>
+                </div>
+
+                <!-- Правая колонка: аватарка -->
+                <div class="flex flex-col w-2/3 items-center space-y-4">
+                    <AvatarSlider :avatars="user.avatars" />
+                    <AddAvatarButton @avatarUploaded="handleAvatarUploaded" />
+                </div>
             </div>
         </div>
     </AppLayout>
