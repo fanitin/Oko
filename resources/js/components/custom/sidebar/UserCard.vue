@@ -1,10 +1,20 @@
 <script setup lang="ts">
 import { useSidebar } from '@/components/ui/sidebar';
-import { Link, usePage } from '@inertiajs/vue3';
+import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
+interface User {
+    id: number;
+    username: string;
+    email: string;
+    main_avatar?: { path: string } | null;
+}
+
+const props = defineProps<{
+    user: User;
+}>();
+
 const { state } = useSidebar();
-const auth = usePage().props.auth;
 
 const isCollapsed = computed(() => state.value === 'collapsed');
 

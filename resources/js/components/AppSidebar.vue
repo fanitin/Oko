@@ -4,6 +4,10 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from '@/compone
 import AppLogoSidebar from '@/components/custom/sidebar/AppLogoSidebar.vue';
 import SidebarHeaderSearch from '@/components/custom/sidebar/SidebarHeaderSearch.vue';
 import UserCard from '@/components/custom/sidebar/UserCard.vue';
+import { usePage } from '@inertiajs/vue3'
+
+const page = usePage()
+const user = page.props.auth.user
 </script>
 
 <template>
@@ -11,7 +15,7 @@ import UserCard from '@/components/custom/sidebar/UserCard.vue';
         <SidebarHeader>
             <AppLogoSidebar/>
             <SidebarHeaderSearch/>
-            <UserCard/>
+            <UserCard :user="user"/>
         </SidebarHeader>
 
         <SidebarContent>

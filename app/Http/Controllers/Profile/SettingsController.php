@@ -22,10 +22,11 @@ class SettingsController extends Controller
         $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
         $path = $file->storeAs('users/avatars/' . $user->id, $filename, 'public');
 
-        $mainExists = $user->avatars()->where('is_main', 1)->exists();
+        $lastMain = $user->avatars()->where('is_main', 1);
+        $lastMain->update(['is_main' => 0]);
         $user->avatars()->create([
             'path' => $path,
-            'is_main' => !$mainExists,
+            'is_main' => 1,
         ]);
 
         $avatars = $user->avatars()->get();

@@ -21,10 +21,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Inertia::share([
-            'auth' => fn() => [
-                'profileUser' => auth()->user() ? (new UserResource(auth()->user()->load('mainAvatar')))->resolve() : null,
-            ]
-        ]);
+
     }
 }
