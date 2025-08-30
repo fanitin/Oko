@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, defineProps, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import axios from 'axios';
 
 interface Avatar {
     id: number;
@@ -7,11 +8,14 @@ interface Avatar {
     is_main: boolean;
 }
 
+const emit = defineEmits<{
+    (e: 'avatarSetAsMain', payload: { success: boolean; message: string }): void;
+}>();
 const props = defineProps<{ avatars?: Avatar[] }>();
 
 const hoverIndex = ref<number | null>(null);
 const currentIndex = ref(0);
-const visibleAvatars = computed(() => props.avatars || []);
+const visibleAvatars = ref<Avatar[]>(props.avatars ?? []);
 const total = computed(() => visibleAvatars.value.length);
 const slideX = ref(0);
 watch(currentIndex, (newIndex) => (slideX.value = -newIndex * 100));
@@ -25,11 +29,41 @@ function next() {
 }
 
 function setMain(avatar: Avatar) {
-    console.log('Set main', avatar);
+    axios
+        .post('/profile/settings/set-as-main', avatar)
+        .then((res) => {
+            visibleAvatars.value = res.data.avatars;
+            currentIndex.value = 0;
+            emit('avatarSetAsMain', {
+                success: !!res.data.success,
+                message: res.data.success ? 'Avatar has been set as main!' : 'Error',
+            });
+        })
+        .catch(() => {
+            emit('avatarSetAsMain', {
+                success: false,
+                message: "Error setting avatar as main",
+            });
+        });
 }
 
 function deleteAvatar(avatar: Avatar) {
-    console.log('Delete', avatar);
+    axios
+        .delete('/profile/settings/delete-avatar', { params: { id: avatar.id } })
+        .then((res) => {
+            visibleAvatars.value = res.data.avatars;
+            currentIndex.value = 0;
+            emit('avatarSetAsMain', {
+                success: !!res.data.success,
+                message: res.data.success ? 'Avatar has been deleted!' : 'Error',
+            });
+        })
+        .catch(() => {
+            emit('avatarSetAsMain', {
+                success: false,
+                message: "Error deleting avatar",
+            });
+        });
 }
 
 const showMenu = ref<number | null>(null);

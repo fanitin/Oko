@@ -15,6 +15,7 @@ class UserAvatarResource extends JsonResource
     public function toArray($request): array
     {
         return [
+            'id' => $this->id,
             'path' => asset('storage/' . $this->path),
             'is_main' => $this->is_main,
         ];

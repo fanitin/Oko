@@ -13,6 +13,13 @@ class UserAvatar extends Model
 
     protected $fillable = ['path', 'is_main'];
 
+
+
+    public function scopeForUser($query, $user)
+    {
+        return $query->where('user_id', $user->id);
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);

@@ -15,6 +15,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::prefix('/settings')->controller(SettingsController::class)->name('settings.')->group(function () {
             Route::post('/upload-avatar', 'uploadAvatar')->name('upload-avatar');
+            Route::post('/set-as-main', 'setAsMain')->name('set-as-main');
+            Route::delete('/delete-avatar', 'deleteAvatar')->name('delete-avatar');
+            Route::post('/update-username', 'updateUsername')->name('update-username');
         });
     });
 

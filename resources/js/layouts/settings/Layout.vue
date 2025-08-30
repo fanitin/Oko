@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import MainButtonComponent from '@/components/custom/MainButtonComponent.vue';
 import Heading from '@/components/Heading.vue';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -27,7 +28,19 @@ const currentPath = page.props.ziggy?.location ? new URL(page.props.ziggy.locati
 
 <template>
     <div class="px-4 py-6">
-        <Heading title="Settings" description="Manage your profile and account settings" />
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+            <Heading
+                title="Settings"
+                description="Manage your profile and account settings"
+                class="flex-1"
+            />
+
+            <Link href="/profile" class="flex-shrink-0">
+                <MainButtonComponent type="secondary" size="md">
+                    Back to profile
+                </MainButtonComponent>
+            </Link>
+        </div>
 
         <div class="flex flex-col space-y-8 md:space-y-0 lg:flex-row lg:space-y-0 lg:space-x-12">
             <aside class="w-full max-w-xl lg:w-48">
