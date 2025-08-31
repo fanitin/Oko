@@ -5,9 +5,17 @@ import AppLogoSidebar from '@/components/custom/sidebar/AppLogoSidebar.vue';
 import SidebarHeaderSearch from '@/components/custom/sidebar/SidebarHeaderSearch.vue';
 import UserCard from '@/components/custom/sidebar/UserCard.vue';
 import { usePage } from '@inertiajs/vue3'
+import { ref, watch } from 'vue';
 
 const page = usePage()
-const user = page.props.auth.user
+const user = ref(page.props.auth.user);
+
+watch(
+    () => page.props.auth.user,
+    (changedUser) => {
+        user.value = changedUser;
+    }
+);
 </script>
 
 <template>

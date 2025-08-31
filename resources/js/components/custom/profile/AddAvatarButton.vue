@@ -2,10 +2,17 @@
 import { ref } from 'vue';
 import axios from 'axios';
 import MainButtonComponent from '@/components/custom/MainButtonComponent.vue';
+import { router } from '@inertiajs/vue3';
+
+interface Avatar {
+    id: number;
+    path: string;
+    is_main: boolean;
+}
 
 const fileInput = ref<HTMLInputElement | null>(null);
 const emit = defineEmits<{
-    (e: 'avatarUploaded', payload: { success: boolean; message: string }): void
+    (e: 'avatarUploaded', payload: { success: boolean; message: string, avatars?: Avatar[] }): void
 }>();
 
 function openFileDialog() {
@@ -24,8 +31,10 @@ function onFileSelected(event: Event) {
             .then((response) => {
                 emit('avatarUploaded', {
                     success: !!response.data.success,
-                    message: response.data.success ? 'Profile picture updated!' : 'Loading error'
+                    message: response.data.success ? 'Profile picture updated!' : 'Loading error',
+                    avatars: response.data.avatars
                 });
+                router.reload({ only: ['auth.user'] });
             })
             .catch(() => {
                 emit('avatarUploaded', { success: false, message: 'Network error' });

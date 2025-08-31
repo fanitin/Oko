@@ -8,7 +8,6 @@ import { Head, Link } from '@inertiajs/vue3';
 import { Settings } from 'lucide-vue-next';
 import { ref } from 'vue';
 import UsernameProfileComponent from '@/components/custom/profile/UsernameProfileComponent.vue';
-import MainButtonComponent from '@/components/custom/MainButtonComponent.vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -33,10 +32,14 @@ const props = defineProps<{
 }>();
 
 const popupRef = ref<typeof MainPopup>();
+const avatars = ref<Avatar[]>(props.user.avatars ?? []);
 
-function handleAvatarUploaded(payload: { success: boolean; message: string }) {
+function handleAvatarUploaded(payload: { success: boolean; message: string, avatars?: Avatar[] }) {
     const type = payload.success ? 'success' : 'error';
     popupRef.value?.show(payload.message, type);
+    if(payload.avatars != null){
+        avatars.value = payload.avatars;
+    }
 }
 
 function handleSetAsMain(payload: { success: boolean; message: string }) {
@@ -60,7 +63,7 @@ function handleUsernameChange(payload: { type: string; message: string }) {
 
                     <div class="mt-4">
                         <Link
-                            href="/settings/profile"
+                            :href="route('profile.edit')"
                             class="flex items-center gap-2 rounded-md bg-gray-100 px-4 py-2 transition hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
                         >
                             <Settings class="h-5 w-5" />
@@ -69,17 +72,19 @@ function handleUsernameChange(payload: { type: string; message: string }) {
                     </div>
 
                     <div class="mt-2">
-                        <form :action="route('logout')" method="POST">
-                            @csrf
-                            <MainButtonComponent type="secondary" size="md" class="w-full" button-type="submit">
-                                Logout
-                            </MainButtonComponent>
-                        </form>
+                        <Link
+                            :href="route('logout')"
+                            method="post"
+                            as="button"
+                            class="w-full rounded-2xl bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 transition duration-200 shadow-md hover:shadow-lg active:scale-95"
+                        >
+                            Logout
+                        </Link>
                     </div>
                 </div>
 
                 <div class="flex flex-col items-center space-y-4 md:w-2/3">
-                    <AvatarSlider :avatars="props.user.avatars" @avatarSetAsMain="handleSetAsMain" />
+                    <AvatarSlider :avatars="avatars" @avatarSetAsMain="handleSetAsMain" />
                     <AddAvatarButton @avatarUploaded="handleAvatarUploaded" />
                 </div>
             </div>

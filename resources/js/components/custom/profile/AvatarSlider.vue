@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, defineProps, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import axios from 'axios';
+import { computed, defineProps, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { router } from '@inertiajs/vue3';
 
 interface Avatar {
     id: number;
@@ -38,11 +39,12 @@ function setMain(avatar: Avatar) {
                 success: !!res.data.success,
                 message: res.data.success ? 'Avatar has been set as main!' : 'Error',
             });
+            router.reload({ only: ['auth.user'] });
         })
         .catch(() => {
             emit('avatarSetAsMain', {
                 success: false,
-                message: "Error setting avatar as main",
+                message: 'Error setting avatar as main',
             });
         });
 }
@@ -57,11 +59,12 @@ function deleteAvatar(avatar: Avatar) {
                 success: !!res.data.success,
                 message: res.data.success ? 'Avatar has been deleted!' : 'Error',
             });
+            router.reload({ only: ['auth.user'] });
         })
         .catch(() => {
             emit('avatarSetAsMain', {
                 success: false,
-                message: "Error deleting avatar",
+                message: 'Error deleting avatar',
             });
         });
 }
@@ -79,6 +82,15 @@ function handleClickOutside(event: MouseEvent) {
 
 onMounted(() => document.addEventListener('click', handleClickOutside));
 onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside));
+
+
+watch(
+    () => props.avatars,
+    (newAvatars) => {
+        visibleAvatars.value = newAvatars ?? [];
+        currentIndex.value = 0;
+    }
+);
 </script>
 
 <template>
@@ -142,6 +154,17 @@ onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
                     ]"
                 ></span>
             </div>
+        </div>
+    </div>
+    <div v-else class="relative flex w-full items-center justify-center">
+        <div class="relative w-5/6 aspect-square overflow-hidden rounded-md flex items-center justify-center
+                bg-gray-200 dark:bg-gray-700">
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 class="h-20 w-20 text-gray-500 dark:text-gray-400"
+                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M5.121 17.804A9 9 0 1118.879 17.804M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
         </div>
     </div>
 </template>
