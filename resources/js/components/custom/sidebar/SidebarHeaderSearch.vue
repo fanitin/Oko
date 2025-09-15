@@ -3,10 +3,15 @@ import { useSidebar } from '@/components/ui/sidebar';
 import { Search } from 'lucide-vue-next';
 import { ref } from 'vue';
 
-const { state } = useSidebar();
+const { state, toggleSidebar } = useSidebar();
 const searchQuery = ref('');
 
 function onSearch() {
+    if (state.value === 'collapsed') {
+        toggleSidebar();
+        return;
+    }
+
     console.log('Searching for:', searchQuery.value);
 }
 </script>
