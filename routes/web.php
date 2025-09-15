@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Chat\ChatController;
 use App\Http\Controllers\Pages\HomeController;
 use App\Http\Controllers\Profile\ProfileController;
 use App\Http\Controllers\Profile\SettingsController;
@@ -19,6 +20,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::delete('/delete-avatar', 'deleteAvatar')->name('delete-avatar');
             Route::post('/update-username', 'updateUsername')->name('update-username');
         });
+    });
+
+    Route::prefix('/chat')->controller(ChatController::class)->name('chat.')->group(function () {
+        Route::get('/{user}', 'index')->name('index');
     });
 
     require __DIR__.'/settings.php';

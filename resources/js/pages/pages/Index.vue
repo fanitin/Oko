@@ -15,8 +15,6 @@ const breadcrumbs: BreadcrumbItem[] = [
     <Head title="" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="container">
-            <a :href="route('appearance')">Go</a>
-        </div>
+
     </AppLayout>
 </template>
