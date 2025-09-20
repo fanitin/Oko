@@ -27,6 +27,13 @@ const props = defineProps<{
         avatars?: Avatar[];
         main_avatar: Avatar;
     };
+    chat: {
+        id: number;
+        is_group: boolean;
+        is_self: boolean;
+        created_at: Date;
+        updated_at: Date;
+    };
 }>();
 
 const popupRef = ref<typeof MainPopup>();
@@ -36,7 +43,8 @@ const popupRef = ref<typeof MainPopup>();
     <Head :title="props.chatWith.username" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <ChatNavBar :user="props.chatWith"/>
+        <ChatNavBar :user="props.chatWith" :chat="props.chat"/>
+
 
     </AppLayout>
 

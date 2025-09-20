@@ -12,10 +12,12 @@ class ChatService
 {
     public function getOrCreatePrivateChat(User $otherUser){
         $you = Auth::user();
+        $isSelfChat = $otherUser->id === $you->id;
 
         $chat = Chat::where('is_group', false)
+            ->when($isSelfChat, fn($q) => $q->where('is_self', true))
             ->whereHas('users', fn($q) => $q->where('user_id', $you->id))
-            ->whereHas('users', fn($q) => $q->where('user_id', $otherUser->id))
+            ->when(!$isSelfChat, fn($q) => $q->whereHas('users', fn($q2) => $q2->where('user_id', $otherUser->id)))
             ->first();
 
         if($chat){
@@ -25,15 +27,21 @@ class ChatService
         try {
             DB::beginTransaction();
 
-            $chat = Chat::create(['is_group' => false]);
-            ChatUser::create([
-                'chat_id' => $chat->id,
-                'user_id' => $otherUser->id,
+            $chat = Chat::create([
+                'is_group' => false,
+                'is_self' => $isSelfChat,
             ]);
+
             ChatUser::create([
                 'chat_id' => $chat->id,
                 'user_id' => $you->id,
             ]);
+            if (!$isSelfChat) {
+                ChatUser::create([
+                    'chat_id' => $chat->id,
+                    'user_id' => $otherUser->id,
+                ]);
+            }
 
             DB::commit();
         } catch (\Exception $e) {

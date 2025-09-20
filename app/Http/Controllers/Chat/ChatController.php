@@ -25,6 +25,7 @@ class ChatController extends Controller
 
         return Inertia::render('chat/Index', [
             'chatWith' => $user->resolve(),
+            'chat' => $chat,
         ]);
     }
 }

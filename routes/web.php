@@ -12,7 +12,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
 
     Route::prefix('/profile')->controller(ProfileController::class)->name('profile.')->group(function () {
-        Route::get('/', 'index')->name('index');
+        Route::get('/{user}', 'index')->name('index');
 
         Route::prefix('/settings')->controller(SettingsController::class)->name('settings.')->group(function () {
             Route::post('/upload-avatar', 'uploadAvatar')->name('upload-avatar');
