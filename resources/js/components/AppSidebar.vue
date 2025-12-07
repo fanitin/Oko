@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import ChatList from '@/components/custom/sidebar/ChatList.vue';
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from '@/components/ui/sidebar';
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarTrigger } from '@/components/ui/sidebar';
 import AppLogoSidebar from '@/components/custom/sidebar/AppLogoSidebar.vue';
 import SidebarHeaderSearch from '@/components/custom/sidebar/SidebarHeaderSearch.vue';
 import UserCard from '@/components/custom/sidebar/UserCard.vue';
@@ -22,6 +22,7 @@ watch(
     <Sidebar collapsible="icon" variant="inset">
         <SidebarHeader>
             <AppLogoSidebar/>
+            <SidebarTrigger/>
             <SidebarHeaderSearch/>
             <UserCard :user="user"/>
         </SidebarHeader>

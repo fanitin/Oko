@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import ToolTip from '@/components/custom/ToolTip.vue';
 import MainButtonComponent from '@/components/custom/MainButtonComponent.vue';
-import { defineProps, ref } from 'vue';
+import ToolTip from '@/components/custom/ToolTip.vue';
 import axios from 'axios';
+import { defineProps, ref } from 'vue';
 
 const props = defineProps<{
     user: {
@@ -20,8 +20,9 @@ const username = ref(props.user.username);
 const tempUsername = ref(username.value);
 
 function saveUsername() {
-    axios.post('/profile/settings/update-username', { username: tempUsername.value })
-        .then(res => {
+    axios
+        .post('/profile/settings/update-username', { username: tempUsername.value })
+        .then((res) => {
             if (res.data.success) {
                 username.value = tempUsername.value;
                 editing.value = false;
@@ -36,7 +37,7 @@ function saveUsername() {
                 });
             }
         })
-        .catch(err => {
+        .catch((err) => {
             const message = err.response?.data?.message || 'Error updating username';
             emit('popUpRefChange', {
                 type: 'error',
@@ -45,10 +46,24 @@ function saveUsername() {
         });
 }
 
-
 function cancelEditing() {
     editing.value = false;
 }
+
+const copyEmail = async (email: string) => {
+    try {
+        await navigator.clipboard.writeText(email);
+        emit('popUpRefChange', {
+            type: 'success',
+            message: 'Email copied to clipboard!',
+        });
+    } catch (error) {
+        emit('popUpRefChange', {
+            type: 'error',
+            message: 'Failed to copy email.',
+        });
+    }
+};
 </script>
 
 <template>
@@ -77,7 +92,11 @@ function cancelEditing() {
                 <MainButtonComponent type="secondary" size="sm" @click="cancelEditing"> Cancel</MainButtonComponent>
             </template>
         </div>
-        <p class="text-sm text-gray-500 dark:text-gray-400">{{ props.user.email }}</p>
+        <ToolTip text="Click here to copy the email to clipboard!" class="mt-6 w-1/4">
+            <p class="text-sm text-gray-500 dark:text-gray-400" @click="copyEmail(props.user.email)">
+                {{ props.user.email }}
+            </p>
+        </ToolTip>
     </div>
 </template>
 

@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import axios from 'axios';
-import { computed, defineProps, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
+import axios from 'axios';
+import { MoreVertical } from 'lucide-vue-next';
+import { computed, defineProps, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 interface Avatar {
     id: number;
@@ -83,13 +84,12 @@ function handleClickOutside(event: MouseEvent) {
 onMounted(() => document.addEventListener('click', handleClickOutside));
 onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside));
 
-
 watch(
     () => props.avatars,
     (newAvatars) => {
         visibleAvatars.value = newAvatars ?? [];
         currentIndex.value = 0;
-    }
+    },
 );
 </script>
 
@@ -101,10 +101,10 @@ watch(
                     <img :src="avatar.path" alt="avatar" class="h-full w-full rounded-md object-cover" />
 
                     <button
-                        class="absolute top-0 right-0 px-5 py-3 text-3xl text-white opacity-50 transition hover:opacity-100"
+                        class="absolute top-2 right-2 cursor-pointer rounded-full border border-gray-300 bg-white/70 p-2 shadow-md transition hover:bg-white dark:border-gray-600 dark:bg-gray-700/70 dark:hover:bg-gray-700"
                         @click.stop="toggleMenu(index)"
                     >
-                        ...
+                        <MoreVertical class="h-5 w-5 text-gray-700 dark:text-gray-300" />
                     </button>
 
                     <transition name="fade">
@@ -126,15 +126,16 @@ watch(
 
             <button
                 @click="prev"
-                class="absolute top-1/2 left-0 z-10 -translate-y-1/2 px-6 py-12 text-5xl font-bold text-white opacity-50 transition hover:opacity-100"
+                class="absolute top-1/2 left-2 z-10 -translate-y-1/2 cursor-pointer rounded-full border border-gray-300 bg-white/70 p-3 shadow-md transition hover:bg-white dark:border-gray-600 dark:bg-gray-700/70 dark:hover:bg-gray-700"
             >
-                ‹
+                <span class="text-2xl font-bold text-gray-800 dark:text-gray-100">‹</span>
             </button>
+
             <button
                 @click="next"
-                class="absolute top-1/2 right-0 z-10 -translate-y-1/2 px-6 py-12 text-5xl font-bold text-white opacity-50 transition hover:opacity-100"
+                class="absolute top-1/2 right-2 z-10 -translate-y-1/2 cursor-pointer rounded-full border border-gray-300 bg-white/70 p-3 shadow-md transition hover:bg-white dark:border-gray-600 dark:bg-gray-700/70 dark:hover:bg-gray-700"
             >
-                ›
+                <span class="text-2xl font-bold text-gray-800 dark:text-gray-100">›</span>
             </button>
 
             <div class="absolute bottom-0 left-0 flex w-full justify-center space-x-1">
@@ -157,13 +158,20 @@ watch(
         </div>
     </div>
     <div v-else class="relative flex w-full items-center justify-center">
-        <div class="relative w-5/6 aspect-square overflow-hidden rounded-md flex items-center justify-center
-                bg-gray-200 dark:bg-gray-700">
-            <svg xmlns="http://www.w3.org/2000/svg"
-                 class="h-20 w-20 text-gray-500 dark:text-gray-400"
-                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M5.121 17.804A9 9 0 1118.879 17.804M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+        <div class="relative flex aspect-square w-5/6 items-center justify-center overflow-hidden rounded-md bg-gray-200 dark:bg-gray-700">
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-20 w-20 text-gray-500 dark:text-gray-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+            >
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M5.121 17.804A9 9 0 1118.879 17.804M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                />
             </svg>
         </div>
     </div>

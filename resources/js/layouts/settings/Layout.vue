@@ -35,7 +35,7 @@ const currentPath = page.props.ziggy?.location ? new URL(page.props.ziggy.locati
                 class="flex-1"
             />
 
-            <Link href="/profile" class="flex-shrink-0">
+            <Link :href="route('profile.index', page.props.auth.user.id)" class="flex-shrink-0">
                 <MainButtonComponent type="secondary" size="md">
                     Back to profile
                 </MainButtonComponent>
