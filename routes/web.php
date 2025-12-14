@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Chat\ChatController;
+use App\Http\Controllers\Chat\MessageController;
 use App\Http\Controllers\Pages\HomeController;
 use App\Http\Controllers\Profile\ProfileController;
 use App\Http\Controllers\Profile\SettingsController;
@@ -22,8 +23,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
     });
 
-    Route::prefix('/chat')->controller(ChatController::class)->name('chat.')->group(function () {
-        Route::get('/{user}', 'index')->name('index');
+    Route::prefix('/chat')->name('chat.')->group(function () {
+        Route::get('/{chat?}', [ChatController::class ,'show'])->name('show');
+    });
+
+    Route::prefix('/chat/{chat}')->name('message.')->group(function () {
+        Route::post('/message', [MessageController::class, 'store'])->name('store');
     });
 
     require __DIR__.'/settings.php';

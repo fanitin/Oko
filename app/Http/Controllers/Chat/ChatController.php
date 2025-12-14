@@ -3,29 +3,36 @@
 namespace App\Http\Controllers\Chat;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\UserAvatarResource;
 use App\Http\Resources\UserResource;
+use App\Models\Chat;
 use App\Models\User;
-use App\Services\ChatService;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Services\Chat\ChatService;
 use Inertia\Inertia;
 
 class ChatController extends Controller
 {
     public $chatService;
+
     public function __construct(ChatService $chatService)
     {
         $this->chatService = $chatService;
     }
 
-    public function index(User $user){
-        $chat = $this->chatService->getOrCreatePrivateChat($user);
-        $user = new UserResource($user->load('mainAvatar', 'avatars'));
+    public function show(?Chat $chat)
+    {
+        $userId = auth()->id();
+
+        if ($chat) {
+            $participantsIds = $chat->chatUsers->pluck('user_id')->toArray();
+        } else {
+            $participantsIds = request()->get('participants', [$userId]);
+        }
+
+        $chat = $this->chatService->getOrCreateById($chat?->id, $participantsIds);
 
         return Inertia::render('chat/Index', [
-            'chatWith' => $user->resolve(),
             'chat' => $chat,
+            'chatWith' => $chat->chatWith,
         ]);
     }
 }

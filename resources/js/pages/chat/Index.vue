@@ -93,8 +93,8 @@ const handleEmojiSelect = (emoji: string) => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <ChatNavBar :user="props.chatWith" :chat="props.chat"/>
 
-        <div class="flex flex-col h-[calc(100vh-60px)]">
-
+        <div class="flex flex-col flex-1">
+            
             <div
                 ref="messagesContainer"
                 class="flex-1 overflow-y-auto p-4 space-y-3

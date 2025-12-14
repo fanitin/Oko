@@ -1,43 +1,16 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue';
+import { sidebarState } from '@/lib/custom/sidebarState';
 import ChatItem from './ChatItem.vue'
+import { usePage } from '@inertiajs/vue3';
+const page = usePage()
 
-interface Chat {
-    id: number
-    name?: string
-    lastMessage?: string
-    avatar?: string
-    unreadCount?: number
-}
+const chats = computed(() => page.props.chats ?? [])
 
-const chats = ref<Chat[]>([
-    {
-        id: 1,
-        name: 'Виталий',
-        lastMessage: 'Привет! Как дела?',
-        avatar: 'https://i.pravatar.cc/40?u=1',
-        unreadCount: 2,
-    },
-    {
-        id: 2,
-        name: 'Александр',
-        lastMessage: 'Давай встретимся вечером',
-        avatar: 'https://i.pravatar.cc/40?u=2',
-        unreadCount: 0,
-    },
-    {
-        id: 3,
-        name: 'Мария',
-        lastMessage: 'Я отправила тебе документы',
-        avatar: undefined,
-        unreadCount: 5,
-    },
-])
-
-const activeChatId = ref<number | null>(null)
+const activeChatId = ref<number>(0)
 
 const selectChat = (chatId: number) => {
-    activeChatId.value = chatId
+    sidebarState.activeChatId = chatId
 }
 </script>
 
@@ -47,7 +20,7 @@ const selectChat = (chatId: number) => {
             v-for="chat in chats"
             :key="chat.id"
             :chat="chat"
-            :class="chat.id === activeChatId ? 'bg-gray-200 dark:bg-gray-700' : ''"
+            :class="chat.id === sidebarState.activeChatId ? 'bg-gray-200 dark:bg-gray-700 rounded-xl' : ''"
             @click="selectChat(chat.id)"
         />
     </div>

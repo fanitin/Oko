@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Http\Resources\UserResource;
+use App\Services\Chat\ChatListService;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -49,6 +50,12 @@ class HandleInertiaRequests extends Middleware
                     ? (new UserResource($request->user()->load('mainAvatar', 'avatars')))->resolve($request)
                     : null,
             ],
+            'chats' => function () {
+                if (auth()->check()) {
+                    return app(ChatListService::class)->getForSidebar();
+                }
+                return [];
+            },
             'ziggy' => [
                 ...(new Ziggy)->toArray(),
                 'location' => $request->url(),

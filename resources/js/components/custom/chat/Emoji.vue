@@ -32,18 +32,18 @@ function selectEmoji(emoji: string) {
         <button
             type="button"
             @click="toggle"
-            class="px-3 py-2 bg-gray-200 dark:bg-gray-900 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-800 transition"
+            class="px-2 py-1 bg-gray-200 dark:bg-gray-900 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-800 transition"
         >
-            😊
+            😝
         </button>
 
         <transition name="fade">
             <div
                 v-if="show"
                 ref="pickerRef"
-                class="absolute bottom-full left-0 mb-2 w-64 max-h-60 overflow-y-auto
+                class="emoji-scroll absolute bottom-full left-0 mb-2 w-64 max-h-60 overflow-y-auto
                bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700
-               rounded-lg shadow-lg p-2 flex flex-wrap gap-2 z-50"
+               rounded-lg shadow-lg p-2 flex flex-wrap gap-1 z-50"
             >
         <span
             v-for="(emoji, index) in emojiList"
@@ -64,5 +64,27 @@ function selectEmoji(emoji: string) {
 }
 .fade-enter-from, .fade-leave-to {
     opacity: 0;
+}
+
+.emoji-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.emoji-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.emoji-scroll::-webkit-scrollbar-thumb {
+    background-color: rgba(120, 120, 120, 0.4);
+    border-radius: 999px;
+}
+
+.dark .emoji-scroll::-webkit-scrollbar-thumb {
+    background-color: rgba(180, 180, 180, 0.35);
+}
+
+.emoji-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(120,120,120,.4) transparent;
 }
 </style>

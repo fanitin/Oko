@@ -57,4 +57,16 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasOne(UserAvatar::class)->where('is_main', 1);
     }
+
+    public function chats()
+    {
+        return $this->belongsToMany(Chat::class, 'chat_users', 'user_id', 'chat_id')
+            ->withPivot('role', 'last_read_message_id')
+            ->withTimestamps();
+    }
+
+    public function messages()
+    {
+        return $this->hasMany(Message::class);
+    }
 }

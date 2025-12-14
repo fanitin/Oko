@@ -7,11 +7,12 @@ const { state } = useSidebar();
 
 const props = defineProps<{
     chat: {
-        id: number;
-        name?: string;
-        lastMessage?: string;
-        avatar?: string;
-        unreadCount?: number;
+        id: number
+        name?: string
+        lastMessage?: string
+        avatar?: string
+        unreadCount?: number
+        participants: number[]
     };
 }>();
 
@@ -23,13 +24,14 @@ const safeChat = computed(() => ({
     lastMessage: props.chat.lastMessage ?? 'No messages yet',
     avatar: props.chat.avatar ?? undefined,
     unreadCount: props.chat.unreadCount ?? 0,
+    participants: props.chat.participants ?? [],
 }));
 
 const firstLetter = computed(() => (safeChat.value.name ? safeChat.value.name.charAt(0) : '?'));
 </script>
 
 <template>
-    <Link :href="route('chat.index', safeChat.id)">
+    <Link :href="route('chat.show', safeChat.id)">
         <div
             :class="[
                 'flex cursor-pointer items-center rounded-xl transition hover:bg-gray-200 dark:hover:bg-gray-800',
