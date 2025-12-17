@@ -28,32 +28,29 @@ class ChatListService
                 ->where('id', '>', $chatUser->pivot->last_read_message_id ?? 0)
                 ->count();
 
-            // Определяем имя и аватар
             if ($chat->is_group) {
-                $name = $chat->title ?? 'Group Chat';
-                $mainAvatar = $chat->chatAvatars->firstWhere('is_main', 1);
-                $avatar = $mainAvatar ? asset('storage/' . $mainAvatar->path) : null;
+                $name = $chat->title ?? 'Group chat';
+                $avatar = $chat->chatAvatars
+                    ->firstWhere('is_main', true)?->path;
             } elseif ($chat->is_self) {
-                $user = $chat->chatUsers->firstWhere('user_id', $userId)->user;
-                $name = $user->username;
-                $avatar = $user->mainAvatar ? asset('storage/' . $user->mainAvatar->path) : null;
+                $user = $chatUser->user;
+                $name = 'Saved messages';
+                $avatar = $user->mainAvatar?->path;
             } else {
-                $otherUser = $chat->chatUsers->firstWhere('user_id', '!=', $userId)?->user;
-                $name = $otherUser->username ?? null;
-                $avatar = $otherUser && $otherUser->mainAvatar
-                    ? asset('storage/' . $otherUser->mainAvatar->path)
-                    : null;
+                $otherUser = $chat->chatUsers
+                    ->firstWhere('user_id', '!=', $userId)?->user;
+
+                $name = $otherUser?->username ?? 'Unknown';
+                $avatar = $otherUser?->mainAvatar?->path;
             }
 
             return [
                 'id' => $chat->id,
                 'name' => $name,
-                'avatar' => $avatar,
+                'avatar' => $avatar ? asset('storage/' . $avatar) : null,
                 'lastMessage' => $chat->lastMessage?->body,
-                'lastMessageAt' => $chat->lastMessage?->created_at,
                 'unreadCount' => $unreadCount,
-                'participants' => $chat->chatUsers->pluck('user_id')->toArray(),
             ];
-        });
+        })->values();
     }
 }

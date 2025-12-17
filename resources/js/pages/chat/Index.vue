@@ -42,30 +42,6 @@ const popupRef = ref<typeof MainPopup>();
 const message = ref("");
 const messagesContainer = ref<HTMLElement|null>(null);
 
-function send() {
-    if (!message.value.trim()) return;
-
-    messages.value.push({
-        id: Date.now(),
-        body: message.value,
-        is_from_me: true
-    });
-
-    message.value = "";
-
-    nextTick(() => {
-        if (messagesContainer.value) {
-            messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
-        }
-    });
-}
-
-onMounted(() => {
-    if (messagesContainer.value) {
-        messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
-    }
-});
-
 const inputRef = ref<HTMLInputElement | null>(null);
 
 const handleEmojiSelect = (emoji: string) => {
@@ -94,7 +70,7 @@ const handleEmojiSelect = (emoji: string) => {
         <ChatNavBar :user="props.chatWith" :chat="props.chat"/>
 
         <div class="flex flex-col flex-1">
-            
+
             <div
                 ref="messagesContainer"
                 class="flex-1 overflow-y-auto p-4 space-y-3

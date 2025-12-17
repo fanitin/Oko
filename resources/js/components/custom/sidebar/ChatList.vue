@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, watch } from 'vue';
 import { sidebarState } from '@/lib/custom/sidebarState';
 import ChatItem from './ChatItem.vue'
 import { usePage } from '@inertiajs/vue3';
@@ -7,11 +7,21 @@ const page = usePage()
 
 const chats = computed(() => page.props.chats ?? [])
 
-const activeChatId = ref<number>(0)
-
 const selectChat = (chatId: number) => {
     sidebarState.activeChatId = chatId
 }
+
+watch(
+    () => page.url,
+    (url) => {
+        const match = url.match(/^\/chat\/(\d+)/)
+
+        sidebarState.activeChatId = match
+            ? Number(match[1])
+            : 0
+    },
+    { immediate: true }
+)
 </script>
 
 <template>
