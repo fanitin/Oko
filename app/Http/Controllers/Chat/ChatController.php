@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Chat;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ChatResource;
 use App\Http\Resources\UserResource;
 use App\Models\Chat;
 use App\Models\User;
@@ -20,19 +21,24 @@ class ChatController extends Controller
 
     public function show(?Chat $chat)
     {
-        $userId = auth()->id();
+        $authId = auth()->id();
 
-        if ($chat) {
-            $participantsIds = $chat->chatUsers->pluck('user_id')->toArray();
-        } else {
-            $participantsIds = request()->get('participants', [$userId]);
-        }
+        $participantsIds = $chat
+            ? $chat->users->pluck('id')->toArray()
+            : [$authId];
 
-        $chat = $this->chatService->getOrCreateById($chat?->id, $participantsIds);
+        $chat = $this->chatService->getOrCreateById(
+            $chat?->id,
+            $participantsIds
+        );
 
         return Inertia::render('chat/Index', [
-            'chat' => $chat,
-            'chatWith' => $chat->chatWith,
+            'chat' => (new ChatResource(
+                $chat->load([
+                    'users.mainAvatar',
+                    'chatAvatars',
+                ])
+            ))->resolve(),
         ]);
     }
 }

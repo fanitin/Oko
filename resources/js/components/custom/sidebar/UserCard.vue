@@ -25,8 +25,7 @@ const firstLetter = computed(() => (props.user.username ? props.user.username.ch
     <Link :href="route('profile.index', user.id)">
         <div
             :class="[
-                'flex cursor-pointer items-center rounded-xl transition hover:bg-gray-200 dark:hover:bg-gray-800',
-                isCollapsed ? 'gap-2 p-1' : 'gap-3 p-2',
+                'flex cursor-pointer items-center rounded-xl transition hover:bg-gray-200 dark:hover:bg-gray-800 gap-2 p-1'
             ]"
         >
             <img
@@ -34,15 +33,13 @@ const firstLetter = computed(() => (props.user.username ? props.user.username.ch
                 :src="user.main_avatar.path"
                 alt="avatar"
                 :class="[
-                    'rounded-full border-2 border-gray-300 object-cover transition-all duration-200 dark:border-gray-700',
-                    isCollapsed ? 'h-8 w-8' : 'h-10 w-10',
+                    'rounded-full border-2 border-gray-300 object-cover transition-all duration-200 dark:border-gray-700 h-10 w-10'
                 ]"
             />
             <div
                 v-else
                 :class="[
-                    'flex items-center justify-center rounded-full bg-gray-300 transition-all duration-200 dark:bg-gray-700',
-                    isCollapsed ? 'h-8 w-8' : 'h-10 w-10',
+                    'flex items-center justify-center rounded-full bg-gray-300 transition-all duration-200 dark:bg-gray-700 h-10 w-10'
                 ]"
             >
                 <span class="font-bold text-gray-600 dark:text-gray-300">{{ firstLetter }}</span>

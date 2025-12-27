@@ -2,8 +2,8 @@
 import MainPopup from '@/components/custom/MainPopup.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link } from '@inertiajs/vue3';
-import { onMounted, ref, nextTick } from 'vue';
+import { Head } from '@inertiajs/vue3';
+import { ref, nextTick } from 'vue';
 import ChatNavBar from "@/components/custom/chat/ChatNavBar.vue";
 import Emoji from '@/components/custom/chat/Emoji.vue';
 
@@ -14,28 +14,24 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-interface Avatar {
-    id: number;
-    path: string;
-    is_main: boolean;
-}
-
 const props = defineProps<{
-    chatWith: {
-        id: number;
-        username: string;
-        email: string;
-        avatars?: Avatar[];
-        main_avatar: Avatar;
-    };
     chat: {
-        id: number;
-        is_group: boolean;
-        is_self: boolean;
-        created_at: Date;
-        updated_at: Date;
-    };
-}>();
+        id: number
+        type: 'self' | 'private' | 'group'
+        header: {
+            title: string
+            avatar: string | null
+            link: {
+                route: string
+                params: any[]
+            }
+        }
+        participants: Array<{
+            id: number
+            username: string
+        }>
+    }
+}>()
 
 const popupRef = ref<typeof MainPopup>();
 
@@ -64,10 +60,10 @@ const handleEmojiSelect = (emoji: string) => {
 </script>
 
 <template>
-    <Head :title="props.chatWith.username" />
+    <Head :title="props.chat.header.title" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <ChatNavBar :user="props.chatWith" :chat="props.chat"/>
+        <ChatNavBar :chat="props.chat"/>
 
         <div class="flex flex-col flex-1">
 
