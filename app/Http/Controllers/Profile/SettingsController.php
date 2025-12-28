@@ -15,7 +15,7 @@ class SettingsController extends Controller
 {
     public function uploadAvatar(Request $request)
     {
-        $data = $request->validate([
+        $request->validate([
             'avatar' => 'required|image|mimes:jpeg,png,jpg|max:11000',
         ]);
         $file = $request->file('avatar');

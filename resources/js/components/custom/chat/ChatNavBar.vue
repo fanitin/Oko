@@ -43,7 +43,6 @@ function onMenuClick() {
             :href="route(safeHeader.link.route, safeHeader.link.params)"
         >
             <div class="flex cursor-pointer items-center gap-2">
-                <!-- АВАТАР -->
                 <img
                     v-if="safeHeader.avatar"
                     :src="safeHeader.avatar"
@@ -51,7 +50,6 @@ function onMenuClick() {
                     class="h-10 w-10 rounded-full border-2 border-gray-300 object-cover dark:border-gray-700"
                 />
 
-                <!-- ЗАГЛУШКА -->
                 <div
                     v-else
                     class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-300 dark:bg-gray-600"
@@ -61,7 +59,6 @@ function onMenuClick() {
                     </span>
                 </div>
 
-                <!-- TITLE -->
                 <span class="font-medium text-gray-900 dark:text-gray-100">
                     {{ safeHeader.title }}
                 </span>

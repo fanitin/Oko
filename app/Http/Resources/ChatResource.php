@@ -25,11 +25,6 @@ class ChatResource extends JsonResource
                 'id' => $user->id,
                 'username' => $user->username,
             ])->values(),
-
-            // пока пусто, потом:
-            // - пагинация
-            // - websockets
-            'messages' => [],
         ];
     }
 

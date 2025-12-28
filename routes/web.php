@@ -25,10 +25,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::prefix('/chat')->name('chat.')->group(function () {
         Route::get('/{chat?}', [ChatController::class ,'show'])->name('show');
-    });
 
-    Route::prefix('/chat/{chat}')->name('message.')->group(function () {
-        Route::post('/message', [MessageController::class, 'store'])->name('store');
+        Route::prefix('/{chat}')->name('messages.')->group(function () {
+            Route::get('/messages', [MessageController::class, 'index'])->name('index');
+            Route::post('/messages', [MessageController::class, 'store'])->name('store');
+            Route::post('/read', [MessageController::class, 'markAsRead'])->name('mark-as-read');
+        });
     });
 
     require __DIR__.'/settings.php';

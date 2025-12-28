@@ -6,11 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class MessageMedia extends Model
 {
-    protected $table = [
+    protected $fillable = [
         'message_id',
         'media_type',
         'path',
         'meta',
+    ];
+
+    protected $casts = [
+        'meta' => 'array',
     ];
 
     public function message(){

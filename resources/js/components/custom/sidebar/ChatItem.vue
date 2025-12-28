@@ -22,7 +22,7 @@ const safeChat = computed(() => ({
     name: props.chat.name ?? 'Unknown user',
     lastMessage: props.chat.lastMessage ?? 'No messages yet',
     avatar: props.chat.avatar ?? null,
-    unreadCount: props.chat.unreadCount ?? 0,
+    unreadCount: (props.chat.unreadCount && props.chat.unreadCount > 99 ? '99+' : props.chat.unreadCount) ?? 0,
 }));
 
 const firstLetter = computed(() => (safeChat.value.name ? safeChat.value.name.charAt(0) : '?'));
