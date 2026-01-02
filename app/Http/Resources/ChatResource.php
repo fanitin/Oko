@@ -68,11 +68,11 @@ class ChatResource extends JsonResource
         return match ($type) {
             'self' => [
                 'route' => 'profile.index',
-                'params' => [$authId],
+                'params' => [],
             ],
 
             'private' => [
-                'route' => 'profile.index',
+                'route' => 'otherProfile.index',
                 'params' => [
                     $this->users->firstWhere('id', '!=', $authId)?->id,
                 ],

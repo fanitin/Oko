@@ -171,3 +171,7 @@
     padding-right: 3rem;
     margin: 1rem auto;
 }
+
+.md\:peer-data-\[variant\=inset\]\:m-2 {
+    margin: 0 !important;
+}

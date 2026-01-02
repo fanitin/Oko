@@ -12,11 +12,14 @@ class MessageResource extends JsonResource
      *
      * @return array<string, mixed>
      */
+
+
+    public $chatUsers;
+
     public function toArray($request)
     {
         return [
             'id' => $this->id,
-
             'user' => [
                 'id' => $this->user->id,
                 'username' => $this->user->username,
@@ -24,11 +27,8 @@ class MessageResource extends JsonResource
                     ? asset('storage/' . $this->user->mainAvatar->path)
                     : null,
             ],
-
             'body' => $this->body,
-
             'edited_at' => $this->edited_at,
-
             'reply_to' => $this->replyTo
                 ? [
                     'id' => $this->replyTo->id,
@@ -39,15 +39,28 @@ class MessageResource extends JsonResource
                     ],
                 ]
                 : null,
-
-            'media' => $this->media->map(fn ($media) => [
+            'status' => $this->resolveStatus(),
+            'media' => $this->media->map(fn($media) => [
                 'id' => $media->id,
                 'type' => $media->media_type,
                 'path' => asset('storage/' . $media->path),
                 'meta' => $media->meta,
             ]),
-
             'created_at' => $this->created_at,
         ];
+    }
+
+    protected function resolveStatus()
+    {
+        if ($this->user_id === auth()->id()) {
+            $seenByAnyone = $this->chatUsers
+                ->where('id', '!=', $this->user_id)
+                ->where('pivot.last_read_message_id', '>=', $this->id)
+                ->isNotEmpty();
+
+            return $seenByAnyone ? 'seen' : 'delivered';
+        }
+
+        return null;
     }
 }

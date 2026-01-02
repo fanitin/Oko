@@ -3,24 +3,26 @@
 use App\Http\Controllers\Chat\ChatController;
 use App\Http\Controllers\Chat\MessageController;
 use App\Http\Controllers\Pages\HomeController;
-use App\Http\Controllers\Profile\ProfileController;
-use App\Http\Controllers\Profile\SettingsController;
-use Illuminate\Support\Facades\Mail;
+use App\Http\Controllers\Profile\OtherProfileController;
+use App\Http\Controllers\Profile\SelfProfileController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
 
-    Route::prefix('/profile')->controller(ProfileController::class)->name('profile.')->group(function () {
-        Route::get('/{user}', 'index')->name('index');
+    Route::prefix('/profile')->controller(SelfProfileController::class)->name('profile.')->group(function () {
+        Route::get('', 'index')->name('index');
 
-        Route::prefix('/settings')->controller(SettingsController::class)->name('settings.')->group(function () {
+        Route::prefix('/settings')->name('settings.')->group(function () {
             Route::post('/upload-avatar', 'uploadAvatar')->name('upload-avatar');
             Route::post('/set-as-main', 'setAsMain')->name('set-as-main');
             Route::delete('/delete-avatar', 'deleteAvatar')->name('delete-avatar');
             Route::post('/update-username', 'updateUsername')->name('update-username');
         });
+    });
+
+    Route::prefix('/profile/{user}')->controller(OtherProfileController::class)->name('otherProfile.')->group(function () {
+        Route::get('', 'index')->name('index');
     });
 
     Route::prefix('/chat')->name('chat.')->group(function () {

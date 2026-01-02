@@ -92,18 +92,13 @@ const fetchMessages = async () => {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-screen flex-col">
-            <!-- Navbar сверху -->
             <ChatNavBar :chat="props.chat" />
 
-            <!-- Messages + input -->
-            <div class="flex flex-1 min-h-0 flex-col">
-                <!-- Messages -->
                 <MessagesList
                     :messages="messagesWithMeta"
                     :chatType="props.chat.type"
                 />
 
-                <!-- Input -->
                 <div class="border-t border-gray-300 bg-gray-100 p-3 dark:border-gray-700 dark:bg-gray-900">
                     <form @submit.prevent="send" class="flex items-center gap-3">
                         <Emoji @select="handleEmojiSelect" />
@@ -125,7 +120,6 @@ const fetchMessages = async () => {
                     </form>
                 </div>
             </div>
-        </div>
     </AppLayout>
 
     <MainPopup ref="popupRef" />

@@ -22,7 +22,7 @@ const firstLetter = computed(() => (props.user.username ? props.user.username.ch
 </script>
 
 <template>
-    <Link :href="route('profile.index', user.id)">
+    <Link :href="route('profile.index')">
         <div
             :class="[
                 'flex cursor-pointer items-center rounded-xl transition hover:bg-gray-200 dark:hover:bg-gray-800 gap-2 p-1'
