@@ -5,18 +5,29 @@ defineProps<{
     message: {
         id: number;
         body: string;
+        edited_at?: string | null;
         is_from_me: boolean;
         status?: 'delivered' | 'seen' | null;
+        created_at: string;
         reply_to?: {
             id: number;
             body: string;
-            user: { id: number; username: string };
+            user: {
+                id: number;
+                username: string;
+            };
         };
         user: {
             id: number;
             username: string;
             avatar: string | null;
         };
+        media?: {
+            id: number;
+            type: string;
+            path: string;
+            meta: Record<string, any>;
+        }
     };
     chatType: 'self' | 'private' | 'group';
 }>();
@@ -30,55 +41,62 @@ const scrollToReply = (id: number) => {
     el.classList.add('highlighted');
     setTimeout(() => el.classList.remove('highlighted'), 2500);
 };
+
+function formatTime(dateStr: string) {
+    const date = new Date(dateStr);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
 </script>
 
 <template>
-    <div :id="`message-wrapper-${message.id}`" class="message-wrapper rounded-lg px-4 transition-colors duration-500">
-        <div class="flex items-end gap-3 py-2" :class="message.is_from_me ? 'justify-end' : 'justify-start'">
-            <!-- Аватар -->
-            <div v-if="!message.is_from_me && chatType === 'group'" class="h-8 w-8 flex-shrink-0 self-start">
-                <img v-if="message.user.avatar" :src="message.user.avatar" class="h-8 w-8 rounded-full object-cover" alt="Аватар" />
+    <div :id="`message-wrapper-${message.id}`" class="message-wrapper px-2 py-1 transition-colors duration-500">
+        <div class="flex items-end gap-2" :class="message.is_from_me ? 'justify-end' : 'justify-start'">
+            <div v-if="!message.is_from_me && chatType === 'group'" class="h-9 w-9 flex-shrink-0 self-start">
+                <img v-if="message.user.avatar" :src="message.user.avatar" class="h-9 w-9 rounded-full object-cover border border-gray-200 dark:border-gray-700" alt="Avatar" />
                 <div
                     v-else
-                    class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-300 text-sm font-bold text-gray-600 dark:bg-gray-600 dark:text-gray-200"
+                    class="flex h-9 w-9 items-center justify-center rounded-full bg-gray-200 text-base font-bold text-gray-700 dark:bg-gray-700 dark:text-gray-200"
                 >
                     {{ message.user.username[0].toUpperCase() }}
                 </div>
             </div>
 
-            <!-- Bubble -->
             <div
-                class="relative max-w-[75%] rounded-2xl px-3.5 py-2.5 break-words shadow-md"
+                class="relative max-w-[80%] rounded-2xl px-4 py-2.5 break-words shadow-lg"
                 :class="[
                     message.is_from_me
-                        ? 'rounded-br-lg bg-blue-500 text-white dark:bg-purple-700'
-                        : 'rounded-bl-lg bg-white text-gray-900 dark:bg-gray-700 dark:text-gray-100',
+                        ? 'rounded-br-lg bg-gradient-to-br from-blue-500 to-blue-400 text-white dark:from-purple-700 dark:to-purple-600'
+                        : 'rounded-bl-lg bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100',
                 ]"
             >
-                <!-- Reply preview -->
                 <div
                     v-if="message.reply_to"
-                    class="mb-2 cursor-pointer rounded-md border-l-4 border-blue-400 bg-black/10 py-1.5 pr-3 pl-2 text-sm dark:border-purple-500 dark:bg-white/10"
+                    class="mb-2 cursor-pointer rounded-md border-l-4 border-blue-400 bg-blue-50 py-1.5 pr-3 pl-2 text-sm dark:border-purple-500 dark:bg-purple-900/20"
                     @click="scrollToReply(message.reply_to.id)"
                 >
-                    <div class="font-semibold text-gray-800 dark:text-purple-300">{{ message.reply_to.user.username }}</div>
-                    <div class="max-w-[200px] truncate text-gray-900 sm:max-w-[250px] dark:text-gray-300">
+                    <div class="font-semibold text-blue-700 dark:text-purple-300">{{ message.reply_to.user.username }}</div>
+                    <div class="max-w-[220px] truncate text-gray-900 dark:text-gray-300">
                         {{ message.reply_to.body }}
                     </div>
                 </div>
 
-                <!-- Username (групповые чаты) -->
                 <div v-if="chatType === 'group' && !message.is_from_me" class="mb-1 text-xs font-bold text-purple-600 dark:text-purple-400">
                     {{ message.user.username }}
                 </div>
 
-                <!-- Message body -->
-                <div class="text-base" :class="{ 'pr-8': message.is_from_me }">{{ message.body }}</div>
+                <div class="text-base leading-relaxed pb-2 pr-3">{{ message.body }}</div>
 
-                <!-- Status для моих сообщений -->
-                <div v-if="message.is_from_me" class="absolute right-2.5 bottom-1.5 flex items-center">
-                    <CheckCheck v-if="message.status === 'seen'" class="h-4.5 w-4.5 text-cyan-300" />
-                    <Check v-else-if="message.status === 'delivered'" class="h-4.5 w-4.5 text-gray-200" />
+                <div class="flex flex-col text-xs space-y-1" :class="message.is_from_me ? 'items-end' : 'items-start'">
+                    <div class="flex items-center gap-1.5" :class="message.is_from_me ? 'text-gray-200' : 'text-gray-500 dark:text-gray-400'">
+                        <span>{{ formatTime(message.created_at) }}</span>
+                        <span v-if="message.is_from_me">
+                            <CheckCheck v-if="message.status === 'seen'" class="h-4 w-4 text-cyan-300" />
+                            <Check v-else-if="message.status === 'delivered'" class="h-4 w-4" />
+                        </span>
+                    </div>
+                    <div v-if="message.edited_at" class="italic" :class="message.is_from_me ? 'text-gray-200/90' : 'text-gray-500/90 dark:text-gray-400/90'">
+                        edited at {{ formatTime(message.edited_at) }}
+                    </div>
                 </div>
             </div>
         </div>
@@ -87,17 +105,14 @@ const scrollToReply = (id: number) => {
 
 <style scoped>
 .message-wrapper {
-    --highlight-color: rgba(59, 130, 246, 0.2);
+    --highlight-color: rgba(59, 130, 246, 0.18);
 }
-
 .dark .message-wrapper {
-    --highlight-color: rgba(168, 85, 247, 0.2);
+    --highlight-color: rgba(168, 85, 247, 0.18);
 }
-
 .message-wrapper.highlighted {
-    animation: highlight-bg 3s ease-out;
+    animation: highlight-bg 2.5s ease-out;
 }
-
 @keyframes highlight-bg {
     0% {
         background-color: var(--highlight-color);

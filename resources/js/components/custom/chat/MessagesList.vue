@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue';
+import DateSeparator from '@/components/custom/chat/DateSeparator.vue';
 import Message from '@/components/custom/chat/Message.vue';
+import { nextTick, ref, watch } from 'vue';
 
 const props = defineProps<{
     messages: Array<any>;
@@ -9,29 +10,43 @@ const props = defineProps<{
 
 const containerRef = ref<HTMLElement | null>(null);
 
-watch(
-    () => props.messages.length,
-    async () => {
-        await nextTick();
-        containerRef.value?.scrollTo({
+const scrollToBottom = async (behavior: 'smooth' | 'auto' = 'smooth') => {
+    await nextTick();
+    if (containerRef.value) {
+        containerRef.value.scrollTo({
             top: containerRef.value.scrollHeight,
-            behavior: 'smooth',
+            behavior,
         });
     }
+};
+
+watch(
+    () => props.messages.length,
+    () => scrollToBottom(),
+    { immediate: true },
 );
+
+const isSameDay = (d1: Date, d2: Date) => {
+    return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
+};
+
+const shouldShowDateSeparator = (currentMessage: any, previousMessage: any) => {
+    if (!previousMessage) return true;
+    const currentDate = new Date(currentMessage.created_at);
+    const previousDate = new Date(previousMessage.created_at);
+    return !isSameDay(currentDate, previousDate);
+};
 </script>
 
 <template>
     <div
         ref="containerRef"
-        class="flex-1 min-h-0 overflow-y-auto bg-gray-200 p-4 space-y-3 dark:bg-gray-950 scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent"
+        class="scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent min-h-0 flex-1 space-y-1 overflow-y-auto bg-gray-200 p-4 dark:bg-gray-950"
     >
-        <Message
-            v-for="msg in messages"
-            :key="msg.id"
-            :message="msg"
-            :chatType="chatType"
-        />
+        <template v-for="(msg, index) in messages" :key="msg.id">
+            <DateSeparator v-if="shouldShowDateSeparator(msg, messages[index - 1])" :date="msg.created_at" />
+            <Message :message="msg" :chatType="chatType" />
+        </template>
     </div>
 </template>
 <style scoped>

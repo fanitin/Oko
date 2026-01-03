@@ -74,7 +74,10 @@ const handleEmojiSelect = (emoji: string) => {
 const send = () => {
     if (!message.value.trim()) return;
 
-    // TODO: inertia post / axios post
+    axios.post(route('chat.messages.store', props.chat.id), {
+        body: message.value,
+        reply_to_message_id: null,              //TODO реализовать ответ на сообщение
+    });
     // потом сюда воткнётся websocket emit
 
     message.value = '';

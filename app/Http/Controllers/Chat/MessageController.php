@@ -4,8 +4,9 @@ namespace App\Http\Controllers\Chat;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\MessageCollection;
-use App\Http\Resources\MessageResource;
 use App\Models\Chat;
+use App\Models\Message;
+use Illuminate\Http\Request;
 
 class MessageController extends Controller
 {
@@ -18,7 +19,7 @@ class MessageController extends Controller
             ->get()
             ->reverse();
 
-        $chatUsers = $chat->users()->get(); // все участники чата
+        $chatUsers = $chat->users()->get();
 
         $collection = new MessageCollection($messages);
         $collection->chatUsers = $chatUsers;
@@ -26,5 +27,20 @@ class MessageController extends Controller
         return $collection;
     }
 
+    public function store(Request $request, Chat $chat)
+    {
+        $validated = $request->validate([
+            'body' => 'nullable|string',
+            'media' => 'nullable|array',
+            'media.*' => 'file|mimes:jpg,jpeg,png,gif,mp4,avi,mov|max:10240',
+            'reply_to_id' => 'nullable|exists:messages,id',
+        ]);
 
+        Message::create([
+            'body' => $validated['body'],
+            'chat_id' => $chat->id,
+            'user_id' => auth()->user()->id,
+            'reply_for_message_id' => $validated['reply_to_id'] ?? null,
+        ]);
+    }
 }

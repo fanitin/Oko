@@ -26,15 +26,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     Route::prefix('/chat')->name('chat.')->group(function () {
-        Route::get('/{chat?}', [ChatController::class ,'show'])->name('show');
+        Route::get('/{chat?}', [ChatController::class, 'show'])->name('show');
 
         Route::prefix('/{chat}')->name('messages.')->group(function () {
             Route::get('/messages', [MessageController::class, 'index'])->name('index');
             Route::post('/messages', [MessageController::class, 'store'])->name('store');
             Route::post('/read', [MessageController::class, 'markAsRead'])->name('mark-as-read');
+            Route::post('/store', [MessageController::class, 'store'])->name('store');
         });
     });
 
-    require __DIR__.'/settings.php';
+    require __DIR__ . '/settings.php';
 });
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
