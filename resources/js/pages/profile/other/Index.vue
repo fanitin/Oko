@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import MainPopup from '@/components/custom/MainPopup.vue';
-import AddAvatarButton from '@/components/custom/profile/AddAvatarButton.vue';
 import AvatarSlider from '@/components/custom/profile/AvatarSlider.vue';
+import UsernameProfileComponent from '@/components/custom/profile/UsernameProfileComponent.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
-import { Settings } from 'lucide-vue-next';
+import { MessageSquare } from 'lucide-vue-next';
 import { ref } from 'vue';
-import UsernameProfileComponent from '@/components/custom/profile/UsernameProfileComponent.vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -29,18 +28,11 @@ const props = defineProps<{
         email: string;
         avatars?: Avatar[];
     };
+    chatID?: number;
 }>();
 
 const popupRef = ref<typeof MainPopup>();
 const avatars = ref<Avatar[]>(props.user.avatars ?? []);
-
-function handleAvatarUploaded(payload: { success: boolean; message: string, avatars?: Avatar[] }) {
-    const type = payload.success ? 'success' : 'error';
-    popupRef.value?.show(payload.message, type);
-    if(payload.avatars != null){
-        avatars.value = payload.avatars;
-    }
-}
 
 function handleSetAsMain(payload: { success: boolean; message: string }) {
     const type = payload.success ? 'success' : 'error';
@@ -57,39 +49,32 @@ function handleUsernameChange(payload: { type: string; message: string }) {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mt-10 flex justify-center mx-6 md:mx-2">
-            <div class="flex w-full max-w-5xl flex-col gap-8 md:flex-row items-center">
-                <div class="flex flex-col space-y-6 md:w-1/3">
-                    <div>
-                        <h2 class="text-2xl font-semibold">Profile</h2>
-                        <p class="text-gray-600 dark:text-gray-400">Manage your profile information</p>
-                    </div>
-                    <UsernameProfileComponent :user="user" @popUpRefChange="handleUsernameChange"/>
-
-                    <div class="mt-4">
-                        <Link
-                            :href="route('profile.edit')"
-                            class="flex items-center gap-2 rounded-md bg-gray-100 px-4 py-2 transition hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
-                        >
-                            <Settings class="h-5 w-5" />
-                            <span>Settings</span>
-                        </Link>
-                    </div>
-
-                    <div class="mt-2">
-                        <Link
-                            :href="route('logout')"
-                            method="post"
-                            as="button"
-                            class="w-full rounded-2xl bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 transition duration-200 shadow-md hover:shadow-lg active:scale-95"
-                        >
-                            Logout
-                        </Link>
+            <div class="flex w-full max-w-5xl flex-col gap-8 md:flex-row">
+                <!-- Left Column -->
+                <div class="flex w-full flex-col items-center space-y-6 md:w-2/3">
+                    <div
+                        class="w-full rounded-3xl p-4 sm:p-6 bg-white dark:bg-gray-800/50 shadow-lg backdrop-blur-sm transition-all duration-300"
+                    >
+                        <AvatarSlider :avatars="avatars" @avatarSetAsMain="handleSetAsMain" :show_tools="false" />
                     </div>
                 </div>
 
-                <div class="flex flex-col items-center space-y-4 md:w-2/3">
-                    <AvatarSlider :avatars="avatars" @avatarSetAsMain="handleSetAsMain" />
-                    <AddAvatarButton @avatarUploaded="handleAvatarUploaded" />
+                <div class="flex w-full flex-col space-y-6 md:w-1/3">
+                    <div class="rounded-3xl bg-white dark:bg-gray-800/50 shadow-lg p-6 transition-all duration-300">
+                        <div class="mb-4">
+                            <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">Profile</h2>
+                            <p class="text-gray-500 dark:text-gray-400">User information</p>
+                        </div>
+                        <UsernameProfileComponent :user="user" @popUpRefChange="handleUsernameChange" :is_self_profile="false" />
+                    </div>
+
+                    <Link
+                        :href="route('chat.show', chatID)"
+                        class="group flex items-center justify-center gap-3 rounded-2xl bg-blue-500 dark:bg-blue-600 px-4 py-3 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 hover:bg-blue-600 dark:hover:bg-blue-700"
+                    >
+                        <MessageSquare class="h-5 w-5 text-white" />
+                        <span class="font-semibold text-white">Message user</span>
+                    </Link>
                 </div>
             </div>
         </div>

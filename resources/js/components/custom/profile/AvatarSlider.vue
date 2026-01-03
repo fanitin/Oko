@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3';
 import axios from 'axios';
-import { MoreVertical } from 'lucide-vue-next';
+import { MoreVertical, ChevronLeft, ChevronRight, ImageOff, Trash2, Star } from 'lucide-vue-next';
 import { computed, defineProps, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 interface Avatar {
@@ -13,7 +13,16 @@ interface Avatar {
 const emit = defineEmits<{
     (e: 'avatarSetAsMain', payload: { success: boolean; message: string }): void;
 }>();
-const props = defineProps<{ avatars?: Avatar[] }>();
+
+const props = withDefaults(
+    defineProps<{
+        avatars?: Avatar[];
+        show_tools?: boolean;
+    }>(),
+    {
+        show_tools: true,
+    }
+);
 
 const hoverIndex = ref<number | null>(null);
 const currentIndex = ref(0);
@@ -94,102 +103,74 @@ watch(
 </script>
 
 <template>
-    <div v-if="total" class="relative flex w-full items-center justify-center">
-        <div class="relative w-5/6 overflow-hidden rounded-md">
+    <div class="relative w-full group">
+        <div v-if="total > 0" class="relative w-full overflow-hidden rounded-2xl aspect-square shadow-lg">
             <div class="flex transition-transform duration-500 ease-in-out" :style="{ transform: `translateX(${slideX}%)` }">
-                <div v-for="(avatar, index) in visibleAvatars" :key="avatar.id" class="relative aspect-square w-full flex-shrink-0">
-                    <img :src="avatar.path" alt="avatar" class="h-full w-full rounded-md object-cover" />
+                <div v-for="(avatar, index) in visibleAvatars" :key="avatar.id" class="relative w-full flex-shrink-0">
+                    <img :src="avatar.path" alt="User Avatar" class="h-full w-full object-cover" />
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+
+                    <div v-if="avatar.is_main && show_tools" class="absolute top-3 left-3 bg-yellow-400/90 text-white rounded-full p-1.5 shadow-lg">
+                        <Star class="h-4 w-4" fill="currentColor" />
+                    </div>
 
                     <button
-                        class="absolute top-2 right-2 cursor-pointer rounded-full border border-gray-300 bg-white/70 p-2 shadow-md transition hover:bg-white dark:border-gray-600 dark:bg-gray-700/70 dark:hover:bg-gray-700"
+                        v-if="show_tools"
+                        class="absolute top-2 right-2 z-20 p-2 rounded-full bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm shadow-md transition-all hover:bg-white dark:hover:bg-gray-800"
                         @click.stop="toggleMenu(index)"
                     >
-                        <MoreVertical class="h-5 w-5 text-gray-700 dark:text-gray-300" />
+                        <MoreVertical class="h-5 w-5 text-gray-800 dark:text-gray-200" />
                     </button>
 
                     <transition name="fade">
                         <div
                             v-if="showMenu === index"
                             id="avatar-menu"
-                            class="absolute top-12 right-3 z-50 w-44 space-y-2 rounded-md bg-white p-3 shadow-lg dark:bg-gray-800"
+                            class="absolute top-14 right-2 z-50 w-48 rounded-xl bg-white/80 dark:bg-gray-800/90 backdrop-blur-lg shadow-2xl p-2 space-y-1"
                         >
-                            <button @click="setMain(avatar)" class="w-full rounded px-2 py-1 text-left hover:bg-gray-200 dark:hover:bg-gray-700">
-                                Set as main
+                            <button @click="setMain(avatar)" class="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-gray-800 dark:text-gray-200 hover:bg-gray-200/70 dark:hover:bg-gray-700/70 transition-colors">
+                                <Star class="h-4 w-4" />
+                                <span>Set as main</span>
                             </button>
-                            <button @click="deleteAvatar(avatar)" class="w-full rounded px-2 py-1 text-left hover:bg-gray-200 dark:hover:bg-gray-700">
-                                Delete
+                            <button @click="deleteAvatar(avatar)" class="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-100/70 dark:hover:bg-red-500/20 transition-colors">
+                                <Trash2 class="h-4 w-4" />
+                                <span>Delete</span>
                             </button>
                         </div>
                     </transition>
                 </div>
             </div>
 
-            <button
-                @click="prev"
-                class="absolute top-1/2 left-2 z-10 -translate-y-1/2 cursor-pointer rounded-full border border-gray-300 bg-white/70 p-3 shadow-md transition hover:bg-white dark:border-gray-600 dark:bg-gray-700/70 dark:hover:bg-gray-700"
-            >
-                <span class="text-2xl font-bold text-gray-800 dark:text-gray-100">‹</span>
-            </button>
+            <template v-if="total > 1">
+                <button @click="prev" class="absolute top-1/2 left-3 z-10 -translate-y-1/2 p-2 rounded-full bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm shadow-lg transition-all opacity-0 group-hover:opacity-100 hover:scale-110 hover:bg-white/70 dark:hover:bg-gray-800/70">
+                    <ChevronLeft class="h-6 w-6 text-gray-800 dark:text-gray-200" />
+                </button>
+                <button @click="next" class="absolute top-1/2 right-3 z-10 -translate-y-1/2 p-2 rounded-full bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm shadow-lg transition-all opacity-0 group-hover:opacity-100 hover:scale-110 hover:bg-white/70 dark:hover:bg-gray-800/70">
+                    <ChevronRight class="h-6 w-6 text-gray-800 dark:text-gray-200" />
+                </button>
+            </template>
 
-            <button
-                @click="next"
-                class="absolute top-1/2 right-2 z-10 -translate-y-1/2 cursor-pointer rounded-full border border-gray-300 bg-white/70 p-3 shadow-md transition hover:bg-white dark:border-gray-600 dark:bg-gray-700/70 dark:hover:bg-gray-700"
-            >
-                <span class="text-2xl font-bold text-gray-800 dark:text-gray-100">›</span>
-            </button>
-
-            <div class="absolute bottom-0 left-0 flex w-full justify-center space-x-1">
-                <span
+            <div v-if="total > 1" class="absolute bottom-3 left-1/2 -translate-x-1/2 flex space-x-2">
+                <button
                     v-for="(_, idx) in total"
                     :key="idx"
-                    @mouseenter="hoverIndex = idx"
-                    @mouseleave="hoverIndex = null"
                     @click="currentIndex = idx"
-                    :class="[
-                        'h-1 flex-1 cursor-pointer rounded transition-all',
-                        idx === currentIndex
-                            ? 'bg-white dark:bg-purple-400'
-                            : hoverIndex === idx
-                              ? 'bg-white/70 dark:bg-purple-500/70'
-                              : 'bg-white/30 dark:bg-purple-700/50',
-                    ]"
-                ></span>
+                    :class="['h-2 w-2 rounded-full transition-all duration-300', currentIndex === idx ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/80']"
+                ></button>
             </div>
         </div>
-    </div>
-    <div v-else class="relative flex w-full items-center justify-center">
-        <div class="relative flex aspect-square w-5/6 items-center justify-center overflow-hidden rounded-md bg-gray-200 dark:bg-gray-700">
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-20 w-20 text-gray-500 dark:text-gray-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-            >
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M5.121 17.804A9 9 0 1118.879 17.804M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-            </svg>
+
+        <div v-else class="relative flex w-full items-center justify-center overflow-hidden rounded-2xl bg-gray-200 dark:bg-gray-700/50 aspect-square">
+            <div class="text-center text-gray-500 dark:text-gray-400">
+                <ImageOff class="h-16 w-16 mx-auto" />
+                <p class="mt-2 font-medium">No avatars yet</p>
+            </div>
         </div>
     </div>
 </template>
 
 <style scoped>
-.fade-enter-active,
-.fade-leave-active {
-    transition: opacity 0.2s;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-    opacity: 0;
-}
-
-.fade-enter-to,
-.fade-leave-from {
-    opacity: 1;
-}
+.fade-enter-active, .fade-leave-active { transition: opacity 0.2s, transform 0.2s; }
+.fade-enter-from, .fade-leave-to { opacity: 0; transform: translateY(-10px); }
+.fade-enter-to, .fade-leave-from { opacity: 1; transform: translateY(0); }
 </style>

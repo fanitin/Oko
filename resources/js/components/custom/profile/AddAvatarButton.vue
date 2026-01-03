@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import axios from 'axios';
 import MainButtonComponent from '@/components/custom/MainButtonComponent.vue';
 import { router } from '@inertiajs/vue3';
+import { UploadCloud } from 'lucide-vue-next';
 
 interface Avatar {
     id: number;
@@ -45,9 +46,14 @@ function onFileSelected(event: Event) {
 
 <template>
     <div>
-        <input type="file" ref="fileInput" class="hidden" @change="onFileSelected" accept="image/*" />
-        <MainButtonComponent @click="openFileDialog">
-            Add profile picture
-        </MainButtonComponent>
+        <input type="file" ref="fileInput" @change="onFileSelected" accept="image/*" class="hidden" />
+        <button
+            @click="openFileDialog"
+            class="w-full flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl text-center cursor-pointer transition-all duration-300 hover:border-blue-500 dark:hover:border-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700/50"
+        >
+            <UploadCloud class="h-8 w-8 text-gray-400 dark:text-gray-500 mb-2" />
+            <span class="font-semibold text-gray-700 dark:text-gray-300">Add profile picture</span>
+            <span class="text-sm text-gray-500 dark:text-gray-400">Click to upload</span>
+        </button>
     </div>
 </template>

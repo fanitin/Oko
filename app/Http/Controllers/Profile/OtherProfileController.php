@@ -17,6 +17,11 @@ class OtherProfileController extends Controller
     public function index(User $user)
     {
         $user = new UserResource($user->load('mainAvatar', 'avatars'));
-        return Inertia::render('profile/other/Index', ['user' => $user->resolve()]);
+        $chatID = $user->chats()
+            ->whereHas('users', function ($query) {
+                $query->where('user_id', Auth::id());
+            })
+            ->first()?->id;
+        return Inertia::render('profile/other/Index', ['user' => $user->resolve(), 'chatID' => $chatID]);
     }
 }

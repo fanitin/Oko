@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\UserAvatar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
@@ -73,6 +74,8 @@ class SelfProfileController extends Controller
                 "message" => "Avatar not found",
             ], 404);
         }
+
+        Storage::disk('public')->delete($avatar->path);
 
         $avatar->delete();
 
