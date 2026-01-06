@@ -1,12 +1,17 @@
 <script setup lang="ts">
 import DateSeparator from '@/components/custom/chat/DateSeparator.vue';
 import Message from '@/components/custom/chat/Message.vue';
-import { nextTick, ref, watch } from 'vue';
+import { LoaderCircle } from 'lucide-vue-next';
+import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 
 const props = defineProps<{
     messages: Array<any>;
     chatType: 'self' | 'private' | 'group';
+    hasMoreMessages: boolean;
+    isLoadingMore: boolean;
 }>();
+
+const emit = defineEmits(['load-more']);
 
 const containerRef = ref<HTMLElement | null>(null);
 
@@ -20,10 +25,54 @@ const scrollToBottom = async (behavior: 'smooth' | 'auto' = 'smooth') => {
     }
 };
 
+const handleScroll = () => {
+    if (containerRef.value && containerRef.value.scrollTop === 0 && props.hasMoreMessages && !props.isLoadingMore) {
+        emit('load-more');
+    }
+};
+
+onMounted(() => {
+    containerRef.value?.addEventListener('scroll', handleScroll);
+});
+
+onUnmounted(() => {
+    containerRef.value?.removeEventListener('scroll', handleScroll);
+});
+
 watch(
-    () => props.messages.length,
-    () => scrollToBottom(),
-    { immediate: true },
+    () => props.messages,
+    async (newMessages, oldMessages) => {
+        const newLength = newMessages.length;
+        const oldLength = oldMessages?.length ?? 0;
+
+        if (newLength === 0) return;
+
+        const el = containerRef.value;
+        if (!el) return;
+
+        const isInitialLoad = oldLength === 0;
+        if (isInitialLoad) {
+            await scrollToBottom('auto');
+            return;
+        }
+
+        const isAddingNewMessage = newLength > oldLength && newMessages[newLength - 1].id > (oldMessages[oldLength - 1]?.id ?? 0);
+        if (isAddingNewMessage) {
+            // Проверяем, находится ли пользователь внизу списка, прежде чем прокручивать
+            if (el.scrollHeight - el.scrollTop - el.clientHeight < 200) {
+                await scrollToBottom('smooth');
+            }
+            return;
+        }
+
+        const isPrependingOldMessages = newLength > oldLength;
+        if (isPrependingOldMessages) {
+            const oldScrollHeight = el.scrollHeight;
+            await nextTick();
+            el.scrollTop = el.scrollHeight - oldScrollHeight;
+        }
+    },
+    { deep: true },
 );
 
 const isSameDay = (d1: Date, d2: Date) => {
@@ -43,6 +92,10 @@ const shouldShowDateSeparator = (currentMessage: any, previousMessage: any) => {
         ref="containerRef"
         class="scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent min-h-0 flex-1 space-y-1 overflow-y-auto bg-gray-200 p-4 dark:bg-gray-950"
     >
+        <div v-if="isLoadingMore" class="flex justify-center py-2">
+            <LoaderCircle class="h-6 w-6 animate-spin text-gray-500" />
+        </div>
+
         <template v-for="(msg, index) in messages" :key="msg.id">
             <DateSeparator v-if="shouldShowDateSeparator(msg, messages[index - 1])" :date="msg.created_at" />
             <Message :message="msg" :chatType="chatType" />

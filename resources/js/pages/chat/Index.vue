@@ -39,6 +39,8 @@ const popupRef = ref<typeof MainPopup>();
 const inputRef = ref<HTMLInputElement | null>(null);
 const message = ref('');
 const messages = ref<any[]>([]);
+const hasMoreMessages = ref(true);
+const isLoadingMore = ref(false);
 
 const page = usePage();
 const myUserId = page.props.auth.user.id;
@@ -85,8 +87,36 @@ const send = () => {
 
 const fetchMessages = async () => {
     const res = await axios.get(route('chat.messages.index', props.chat.id));
-
     messages.value = res.data.data;
+    hasMoreMessages.value = res.data.data.length === 50;
+};
+const loadMoreMessages = async () => {
+    if (!hasMoreMessages.value || isLoadingMore.value) return;
+
+    isLoadingMore.value = true;
+    const oldestMessageId = messages.value[0]?.id;
+    if (!oldestMessageId) {
+        isLoadingMore.value = false;
+        return;
+    }
+
+    try {
+        const res = await axios.get(route('chat.messages.index', props.chat.id), {
+            params: { cursor: oldestMessageId },
+        });
+console.log(res.data.data);
+        if (res.data.data.length > 0) {
+            messages.value = [...res.data.data, ...messages.value];
+        }
+console.log(messages.value);
+        if (res.data.data.length < 50) {
+            hasMoreMessages.value = false;
+        }
+    } catch (error) {
+        console.error('Failed to load more messages:', error);
+    } finally {
+        isLoadingMore.value = false;
+    }
 };
 </script>
 
@@ -100,6 +130,9 @@ const fetchMessages = async () => {
                 <MessagesList
                     :messages="messagesWithMeta"
                     :chatType="props.chat.type"
+                    :has-more-messages="hasMoreMessages"
+                    :is-loading-more="isLoadingMore"
+                    @load-more="loadMoreMessages"
                 />
 
                 <div class="border-t border-gray-300 bg-gray-100 p-3 dark:border-gray-700 dark:bg-gray-900">

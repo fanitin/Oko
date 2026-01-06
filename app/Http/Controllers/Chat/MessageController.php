@@ -10,12 +10,25 @@ use Illuminate\Http\Request;
 
 class MessageController extends Controller
 {
-    public function index(Chat $chat)
+    public function index(Request $request, Chat $chat)
     {
-        $messages = $chat->messages()
+        $request->validate([
+            'cursor' => 'nullable|integer|exists:messages,id',
+            'limit' => 'nullable|integer|min:1|max:100',
+        ]);
+
+        $limit = $request->input('limit', 50);
+        $cursor = $request->input('cursor');
+
+        $query = $chat->messages()
             ->with(['user.mainAvatar', 'media', 'replyTo.user'])
-            ->latest()
-            ->take(50)
+            ->latest('id');
+
+        if ($cursor) {
+            $query->where('id', '<', $cursor);
+        }
+
+        $messages = $query->take($limit)
             ->get()
             ->reverse();
 
