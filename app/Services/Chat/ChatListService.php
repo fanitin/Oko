@@ -91,6 +91,7 @@ class ChatListService
 
         return $chat->messages()
             ->where('id', '>', $chatUser->pivot->last_read_message_id ?? 0)
+            ->where('user_id', '!=', $userId)
             ->count();
     }
 }
