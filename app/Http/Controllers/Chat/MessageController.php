@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Chat;
 
+use App\Events\Messages\MessageSent;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\MessageCollection;
 use App\Models\Chat;
@@ -49,11 +50,17 @@ class MessageController extends Controller
             'reply_to_id' => 'nullable|exists:messages,id',
         ]);
 
-        Message::create([
+        $message = Message::create([
             'body' => $validated['body'],
             'chat_id' => $chat->id,
             'user_id' => auth()->user()->id,
             'reply_for_message_id' => $validated['reply_to_id'] ?? null,
         ]);
+
+        $message->load('user.mainAvatar', 'media', 'replyTo.user');
+
+        broadcast(new MessageSent($message));
+
+        return response()->noContent();
     }
 }

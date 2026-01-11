@@ -1,13 +1,14 @@
 <script setup lang="ts">
+import ChatNavBar from '@/components/custom/chat/ChatNavBar.vue';
+import Emoji from '@/components/custom/chat/Emoji.vue';
+import MessagesList from '@/components/custom/chat/MessagesList.vue';
 import MainPopup from '@/components/custom/MainPopup.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/vue3';
-import { ref, nextTick, computed, onMounted } from 'vue';
-import ChatNavBar from '@/components/custom/chat/ChatNavBar.vue';
-import Emoji from '@/components/custom/chat/Emoji.vue';
-import MessagesList from '@/components/custom/chat/MessagesList.vue';
 import axios from 'axios';
+import { computed, nextTick, onMounted, ref } from 'vue';
+import { useEcho } from '@laravel/echo-vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -58,6 +59,21 @@ onMounted(() => {
     fetchMessages();
 });
 
+useEcho(
+    `chat.${props.chat.id}`,
+    'message.sent',
+    (e: any) => {
+        console.log(123)
+        const messageExists = messages.value.some(msg => msg.id === e.message.id);
+        if (!messageExists) {
+            messages.value.push({
+                ...e.message,
+                is_from_me: e.message.user.id === myUserId,
+            });
+        }
+    }
+);
+
 const handleEmojiSelect = (emoji: string) => {
     const input = inputRef.value;
     if (!input) return;
@@ -78,7 +94,7 @@ const send = () => {
 
     axios.post(route('chat.messages.store', props.chat.id), {
         body: message.value,
-        reply_to_message_id: null,              //TODO реализовать ответ на сообщение
+        reply_to_message_id: null, //TODO реализовать ответ на сообщение
     });
     // потом сюда воткнётся websocket emit
 
@@ -104,16 +120,14 @@ const loadMoreMessages = async () => {
         const res = await axios.get(route('chat.messages.index', props.chat.id), {
             params: { cursor: oldestMessageId },
         });
-console.log(res.data.data);
         if (res.data.data.length > 0) {
             messages.value = [...res.data.data, ...messages.value];
         }
-console.log(messages.value);
         if (res.data.data.length < 50) {
             hasMoreMessages.value = false;
         }
     } catch (error) {
-        console.error('Failed to load more messages:', error);
+        popupRef.value?.show('Failed to load more messages.', 'error');
     } finally {
         isLoadingMore.value = false;
     }
@@ -127,35 +141,35 @@ console.log(messages.value);
         <div class="flex h-screen flex-col">
             <ChatNavBar :chat="props.chat" />
 
-                <MessagesList
-                    :messages="messagesWithMeta"
-                    :chatType="props.chat.type"
-                    :has-more-messages="hasMoreMessages"
-                    :is-loading-more="isLoadingMore"
-                    @load-more="loadMoreMessages"
-                />
+            <MessagesList
+                :messages="messagesWithMeta"
+                :chatType="props.chat.type"
+                :has-more-messages="hasMoreMessages"
+                :is-loading-more="isLoadingMore"
+                @load-more="loadMoreMessages"
+            />
 
-                <div class="border-t border-gray-300 bg-gray-100 p-3 dark:border-gray-700 dark:bg-gray-900">
-                    <form @submit.prevent="send" class="flex items-center gap-3">
-                        <Emoji @select="handleEmojiSelect" />
+            <div class="border-t border-gray-300 bg-gray-100 p-3 dark:border-gray-700 dark:bg-gray-900">
+                <form @submit.prevent="send" class="flex items-center gap-3">
+                    <Emoji @select="handleEmojiSelect" />
 
-                        <input
-                            ref="inputRef"
-                            v-model="message"
-                            type="text"
-                            placeholder="Write a message..."
-                            class="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:ring-purple-950"
-                        />
+                    <input
+                        ref="inputRef"
+                        v-model="message"
+                        type="text"
+                        placeholder="Write a message..."
+                        class="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:focus:ring-purple-950"
+                    />
 
-                        <button
-                            type="submit"
-                            class="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700 dark:bg-purple-800 dark:hover:bg-purple-900"
-                        >
-                            Send
-                        </button>
-                    </form>
-                </div>
+                    <button
+                        type="submit"
+                        class="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700 dark:bg-purple-800 dark:hover:bg-purple-900"
+                    >
+                        Send
+                    </button>
+                </form>
             </div>
+        </div>
     </AppLayout>
 
     <MainPopup ref="popupRef" />
