@@ -2,16 +2,17 @@
 
 namespace App\Events\Messages;
 
+use App\Http\Resources\MessageResource;
 use App\Models\Message;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class MessageSent implements ShouldBroadcastNow
+class MessageSent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -30,12 +31,6 @@ class MessageSent implements ShouldBroadcastNow
      */
     public function broadcastOn(): array
     {
-        logger('Broadcasting to chat', [
-            'chat_id' => $this->message->chat_id,
-            'user_id' => $this->message->user_id,
-            'message' => $this->message->body,
-        ]);
-
         return [
             new PrivateChannel('chat.'.$this->message->chat_id),
         ];
@@ -44,5 +39,19 @@ class MessageSent implements ShouldBroadcastNow
     public function broadcastAs(): string
     {
         return 'message.sent';
+    }
+
+    public function broadcastWith(): array
+    {
+        $isMine = $this->message->user_id === auth()->id();
+
+        return [
+            'message' => $isMine ? null : new MessageResource($this->message), // если мое, не слать
+            'sidebar' => $isMine ? null : [
+                'chatId' => $this->message->chat_id,
+                'lastMessage' => $this->message->body,
+                'unreadCountIncrement' => 1,
+            ],
+        ];
     }
 }

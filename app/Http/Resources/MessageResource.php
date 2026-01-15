@@ -52,6 +52,9 @@ class MessageResource extends JsonResource
 
     protected function resolveStatus()
     {
+        if(!$this->chatUsers) {
+            return 'delivered';
+        }
         if ($this->user_id === auth()->id()) {
             $seenByAnyone = $this->chatUsers
                 ->where('id', '!=', $this->user_id)
@@ -61,6 +64,6 @@ class MessageResource extends JsonResource
             return $seenByAnyone ? 'seen' : 'delivered';
         }
 
-        return null;
+        return 'delivered';
     }
 }

@@ -6,9 +6,9 @@ import MainPopup from '@/components/custom/MainPopup.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/vue3';
+import { useEcho } from '@laravel/echo-vue';
 import axios from 'axios';
 import { computed, nextTick, onMounted, ref } from 'vue';
-import { useEcho } from '@laravel/echo-vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -45,6 +45,8 @@ const isLoadingMore = ref(false);
 
 const page = usePage();
 const myUserId = page.props.auth.user.id;
+const messagesListRef = ref<HTMLElement | null>(null);
+
 
 const messagesWithMeta = computed(() => {
     if (!Array.isArray(messages.value)) return [];
@@ -59,20 +61,15 @@ onMounted(() => {
     fetchMessages();
 });
 
-useEcho(
-    `chat.${props.chat.id}`,
-    'message.sent',
-    (e: any) => {
-        console.log(123)
-        const messageExists = messages.value.some(msg => msg.id === e.message.id);
-        if (!messageExists) {
-            messages.value.push({
-                ...e.message,
-                is_from_me: e.message.user.id === myUserId,
-            });
-        }
+useEcho(`chat.${props.chat.id}`, '.message.sent', (e: any) => {
+    const messageExists = messages.value.some((msg) => msg.id === e.message.id);
+    if (!messageExists) {
+        messages.value.push({
+            ...e.message,
+            is_from_me: e.message.user.id === myUserId,
+        });
     }
-);
+});
 
 const handleEmojiSelect = (emoji: string) => {
     const input = inputRef.value;
@@ -92,11 +89,16 @@ const handleEmojiSelect = (emoji: string) => {
 const send = () => {
     if (!message.value.trim()) return;
 
-    axios.post(route('chat.messages.store', props.chat.id), {
-        body: message.value,
-        reply_to_message_id: null, //TODO реализовать ответ на сообщение
-    });
-    // потом сюда воткнётся websocket emit
+    axios
+        .post(route('chat.messages.store', props.chat.id), {
+            body: message.value,
+            reply_to_message_id: null, //TODO реализовать ответ на сообщение
+        })
+        .then((response) => {
+            messages.value.push({
+                ...response.data.data
+            });
+        });
 
     message.value = '';
 };
@@ -142,6 +144,7 @@ const loadMoreMessages = async () => {
             <ChatNavBar :chat="props.chat" />
 
             <MessagesList
+                ref="messagesListRef"
                 :messages="messagesWithMeta"
                 :chatType="props.chat.type"
                 :has-more-messages="hasMoreMessages"

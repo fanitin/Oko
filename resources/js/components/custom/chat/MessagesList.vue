@@ -58,7 +58,6 @@ watch(
 
         const isAddingNewMessage = newLength > oldLength && newMessages[newLength - 1].id > (oldMessages[oldLength - 1]?.id ?? 0);
         if (isAddingNewMessage) {
-            // Проверяем, находится ли пользователь внизу списка, прежде чем прокручивать
             if (el.scrollHeight - el.scrollTop - el.clientHeight < 200) {
                 await scrollToBottom('smooth');
             }

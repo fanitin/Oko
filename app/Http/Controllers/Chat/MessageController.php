@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Chat;
 use App\Events\Messages\MessageSent;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\MessageCollection;
+use App\Http\Resources\MessageResource;
 use App\Models\Chat;
 use App\Models\Message;
 use Illuminate\Http\Request;
@@ -59,8 +60,8 @@ class MessageController extends Controller
 
         $message->load('user.mainAvatar', 'media', 'replyTo.user');
 
-        broadcast(new MessageSent($message));
+        broadcast(new MessageSent($message))->toOthers();
 
-        return response()->noContent();
+        return new MessageResource($message);
     }
 }
