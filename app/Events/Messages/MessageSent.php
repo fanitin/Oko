@@ -46,7 +46,7 @@ class MessageSent implements ShouldBroadcast
         $isMine = $this->message->user_id === auth()->id();
 
         return [
-            'message' => $isMine ? null : new MessageResource($this->message), // если мое, не слать
+            'message' => $isMine ? null : new MessageResource($this->message),
             'sidebar' => $isMine ? null : [
                 'chatId' => $this->message->chat_id,
                 'lastMessage' => $this->message->body,

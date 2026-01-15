@@ -2,10 +2,15 @@
 import { computed, watch } from 'vue';
 import { sidebarState } from '@/lib/custom/sidebarState';
 import ChatItem from './ChatItem.vue'
-import { usePage } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3'
+
 const page = usePage()
 
-const chats = computed(() => page.props.chats ?? [])
+if (sidebarState.chats.length === 0) {
+    sidebarState.chats = JSON.parse(JSON.stringify(page.props.chats ?? []))
+}
+
+const chats = computed(() => sidebarState.chats)
 
 const selectChat = (chatId: number) => {
     sidebarState.activeChatId = chatId
