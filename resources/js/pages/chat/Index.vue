@@ -8,8 +8,11 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/vue3';
 import { useEcho } from '@laravel/echo-vue';
 import axios from 'axios';
-import { computed, nextTick, onMounted, ref } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { sidebarState } from '@/lib/custom/sidebarState';
+import MessageContextMenu from "@/components/custom/chat/MessageContextMenu.vue";
+import { replyState } from "@/lib/custom/replyState";
+import ReplyPreview from '@/components/custom/chat/ReplyPreview.vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -46,7 +49,7 @@ const isLoadingMore = ref(false);
 
 const page = usePage();
 const myUserId = page.props.auth.user.id;
-const messagesListRef = ref<HTMLElement | null>(null);
+const messagesListRef = ref<InstanceType<typeof MessagesList>>(null)
 
 
 const messagesWithMeta = computed(() => {
@@ -54,7 +57,7 @@ const messagesWithMeta = computed(() => {
 
     return messages.value.map((msg) => ({
         ...msg,
-        is_from_me: msg.user?.id === myUserId,
+        isFromMe: msg.user?.id === myUserId,
     }));
 });
 
@@ -62,8 +65,13 @@ onMounted(() => {
     fetchMessages();
 });
 
+watch(() => replyState.message, (newMessage) => {
+    if (newMessage) {
+        inputRef.value?.focus();
+    }
+});
+
 useEcho(`chat.${props.chat.id}`, '.message.sent', (e: any) => {
-    console.log('Received message event:', e);
     if (!e.message) return
 
     const isFromMe = e.message.user.id === myUserId
@@ -73,7 +81,7 @@ useEcho(`chat.${props.chat.id}`, '.message.sent', (e: any) => {
     if (!messageExists) {
         messages.value.push({
             ...e.message,
-            is_from_me: isFromMe,
+            isFromMe: isFromMe,
         });
     }
 
@@ -113,7 +121,7 @@ const send = () => {
     axios
         .post(route('chat.messages.store', props.chat.id), {
             body: message.value,
-            reply_to_message_id: null, //TODO реализовать ответ на сообщение
+            reply_for_message_id: replyState.message?.id ?? null,
         })
         .then((response) => {
             messages.value.push({
@@ -121,6 +129,7 @@ const send = () => {
             });
         });
 
+    replyState.message = null;
     message.value = '';
 };
 
@@ -129,6 +138,29 @@ const fetchMessages = async () => {
     messages.value = res.data.data;
     hasMoreMessages.value = res.data.data.length === 50;
 };
+
+const fetchAndScrollToMessage = async (messageId: number) => {
+    isLoadingMore.value = true;
+    const oldestMessageId = messages.value[0]?.id;
+    try {
+        const res = await axios.get(route('chat.messages.context', { chat: props.chat.id, message: messageId, cursor: oldestMessageId}));
+        if (res.data.data.length > 0) {
+            messages.value = [...res.data.data, ...messages.value];
+        }
+        if (res.data.data.length < 30) {
+            hasMoreMessages.value = false;
+        }
+
+        await nextTick()
+        messagesListRef.value?.scrollToMessage(messageId)
+
+    } catch (error) {
+        popupRef.value?.show('Failed to load message context.', 'error');
+    } finally {
+        isLoadingMore.value = false;
+    }
+};
+
 const loadMoreMessages = async () => {
     if (!hasMoreMessages.value || isLoadingMore.value) return;
 
@@ -171,11 +203,13 @@ const loadMoreMessages = async () => {
                 :has-more-messages="hasMoreMessages"
                 :is-loading-more="isLoadingMore"
                 @load-more="loadMoreMessages"
+                @fetch-and-scroll="fetchAndScrollToMessage"
             />
 
             <div class="border-t border-gray-300 bg-gray-100 p-3 dark:border-gray-700 dark:bg-gray-900">
+                <ReplyPreview />
                 <form @submit.prevent="send" class="flex items-center gap-3">
-                    <Emoji @select="handleEmojiSelect" />
+                    <Emoji @select="handleEmojiSelect"/>
 
                     <input
                         ref="inputRef"
@@ -197,4 +231,5 @@ const loadMoreMessages = async () => {
     </AppLayout>
 
     <MainPopup ref="popupRef" />
+    <MessageContextMenu />
 </template>

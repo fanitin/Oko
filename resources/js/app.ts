@@ -7,6 +7,7 @@ import { createApp, h } from 'vue';
 import { ZiggyVue } from 'ziggy-js';
 import { initializeTheme } from './composables/useAppearance';
 import { configureEcho } from '@laravel/echo-vue';
+import clickOutsideDirective from './lib/custom/clickOutsideDirective';
 
 configureEcho({
     broadcaster: 'reverb',
@@ -31,6 +32,7 @@ createInertiaApp({
         createApp({ render: () => h(App, props) })
             .use(plugin)
             .use(ZiggyVue)
+            .directive('click-outside', clickOutsideDirective)
             .mount(el);
     },
     progress: {
@@ -38,5 +40,4 @@ createInertiaApp({
     },
 });
 
-// This will set light / dark mode on page load...
 initializeTheme();

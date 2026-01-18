@@ -11,7 +11,7 @@ const props = defineProps<{
     isLoadingMore: boolean;
 }>();
 
-const emit = defineEmits(['load-more']);
+const emit = defineEmits(['load-more', 'fetch-and-scroll']);
 
 const containerRef = ref<HTMLElement | null>(null);
 
@@ -84,6 +84,29 @@ const shouldShowDateSeparator = (currentMessage: any, previousMessage: any) => {
     const previousDate = new Date(previousMessage.created_at);
     return !isSameDay(currentDate, previousDate);
 };
+
+const handleFetchAndScroll = (messageId: number) => {
+    emit('fetch-and-scroll', messageId);
+};
+
+const messageRefs = ref<Record<number, InstanceType<typeof Message>>>({});
+
+const setMessageRef = (id: number, instance: any) => {
+    messageRefs.value[id] = instance;
+};
+
+const scrollToMessage = async (messageId: number) => {
+    await nextTick();
+    const msgComp = messageRefs.value[messageId];
+    if (msgComp) {
+        msgComp.scrollToReply(messageId);
+    }
+};
+
+defineExpose({
+    scrollToMessage,
+    setMessageRef,
+});
 </script>
 
 <template>
@@ -97,7 +120,11 @@ const shouldShowDateSeparator = (currentMessage: any, previousMessage: any) => {
 
         <template v-for="(msg, index) in messages" :key="msg.id">
             <DateSeparator v-if="shouldShowDateSeparator(msg, messages[index - 1])" :date="msg.created_at" />
-            <Message :message="msg" :chatType="chatType" />
+            <Message :message="msg"
+                     :chatType="chatType"
+                     @fetch-and-scroll="handleFetchAndScroll"
+                     :ref="(el) => setMessageRef(msg.id, el)"
+            />
         </template>
     </div>
 </template>

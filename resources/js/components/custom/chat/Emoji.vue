@@ -14,16 +14,20 @@ const emojiList = [
     '🤩','🤔','🤨','😐','😑','😶','🙄','😏','😣','😥',
     '😮','🤐','😯','😪','😫','🥱','😴','😌','😛','😜',
     '😝','🤤','😒','😓','😔','😕','🙃','🤑','😲','☹️',
-    '🥳','🤯','😳','🥺','😡','😠','🤬','😷','🤒','🤕'
+    '🥳','🤯','😳','🥺','😡','😠','🤬','😷','🤒','🤕',
 ];
 
 function toggle() {
     show.value = !show.value;
 }
 
+function close() {
+    show.value = false;
+}
+
 function selectEmoji(emoji: string) {
     emit('select', emoji);
-    show.value = false;
+    // show.value = false;
 }
 </script>
 
@@ -32,7 +36,7 @@ function selectEmoji(emoji: string) {
         <button
             type="button"
             @click="toggle"
-            class="px-2 py-1 bg-gray-200 dark:bg-gray-900 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-800 transition"
+            class="rounded-lg bg-gray-200 px-2 py-1 transition hover:bg-gray-300 dark:bg-gray-900 dark:hover:bg-gray-800"
         >
             😝
         </button>
@@ -41,28 +45,30 @@ function selectEmoji(emoji: string) {
             <div
                 v-if="show"
                 ref="pickerRef"
-                class="emoji-scroll absolute bottom-full left-0 mb-2 w-64 max-h-60 overflow-y-auto
-               bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700
-               rounded-lg shadow-lg p-2 flex flex-wrap gap-1 z-50"
+                class="emoji-scroll absolute bottom-full left-0 z-50 mb-2 flex max-h-60 w-64 flex-wrap gap-1 overflow-y-auto rounded-lg border border-gray-300 bg-gray-100 p-2 shadow-lg dark:border-gray-700 dark:bg-gray-900"
+                v-click-outside="{ handler: close, ignore: buttonRef }"
             >
-        <span
-            v-for="(emoji, index) in emojiList"
-            :key="index"
-            class="cursor-pointer text-2xl hover:scale-125 transition"
-            @click="selectEmoji(emoji)"
-        >
-          {{ emoji }}
-        </span>
+                <span
+                    v-for="(emoji, index) in emojiList"
+                    :key="index"
+                    class="cursor-pointer text-2xl transition hover:scale-125"
+                    @click="selectEmoji(emoji)"
+                >
+                    {{ emoji }}
+                </span>
             </div>
         </transition>
     </div>
 </template>
 
 <style scoped>
-.fade-enter-active, .fade-leave-active {
+.fade-enter-active,
+.fade-leave-active {
     transition: opacity 0.2s ease;
 }
-.fade-enter-from, .fade-leave-to {
+
+.fade-enter-from,
+.fade-leave-to {
     opacity: 0;
 }
 
@@ -85,6 +91,6 @@ function selectEmoji(emoji: string) {
 
 .emoji-scroll {
     scrollbar-width: thin;
-    scrollbar-color: rgba(120,120,120,.4) transparent;
+    scrollbar-color: rgba(120, 120, 120, 0.4) transparent;
 }
 </style>
