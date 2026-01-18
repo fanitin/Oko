@@ -43,12 +43,12 @@ class MessageSent implements ShouldBroadcast
 
     public function broadcastWith(): array
     {
-        $isMine = $this->message->user_id === auth()->id();
 
         return [
-            'message' => $isMine ? null : new MessageResource($this->message),
-            'sidebar' => $isMine ? null : [
+            'message' => new MessageResource($this->message),
+            'sidebar' => [
                 'chatId' => $this->message->chat_id,
+                'userId' => $this->message->user_id,
                 'lastMessage' => $this->message->body,
                 'unreadCountIncrement' => 1,
             ],

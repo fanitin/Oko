@@ -9,6 +9,7 @@ import { Head, usePage } from '@inertiajs/vue3';
 import { useEcho } from '@laravel/echo-vue';
 import axios from 'axios';
 import { computed, nextTick, onMounted, ref } from 'vue';
+import { sidebarState } from '@/lib/custom/sidebarState';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -62,12 +63,32 @@ onMounted(() => {
 });
 
 useEcho(`chat.${props.chat.id}`, '.message.sent', (e: any) => {
+    console.log('Received message event:', e);
+    if (!e.message) return
+
+    const isFromMe = e.message.user.id === myUserId
+    if(isFromMe) return;
+
     const messageExists = messages.value.some((msg) => msg.id === e.message.id);
     if (!messageExists) {
         messages.value.push({
             ...e.message,
-            is_from_me: e.message.user.id === myUserId,
+            is_from_me: isFromMe,
         });
+    }
+
+    const chat = sidebarState.chats.find(c => c.id === props.chat.id)
+
+    if (chat) {
+        if (!isFromMe) {
+            chat.lastMessage = e.message.body
+            chat.unreadCount = (chat.unreadCount ?? 0) + 1
+        }
+
+        sidebarState.chats = [
+            chat,
+            ...sidebarState.chats.filter(c => c.id !== chat.id),
+        ]
     }
 });
 
