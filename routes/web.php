@@ -31,6 +31,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::prefix('/{chat}')->name('messages.')->group(function () {
             Route::get('/messages', [MessageController::class, 'index'])->name('index');
             Route::post('/messages', [MessageController::class, 'store'])->name('store');
+            Route::delete('/messages/{message}', [MessageController::class, 'delete'])->name('delete');
             Route::get('/messages/context/{message}', [MessageController::class, 'context'])->name('context');
             Route::post('/read', [MessageController::class, 'markAsRead'])->name('mark-as-read');
         });

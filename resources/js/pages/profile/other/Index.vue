@@ -7,6 +7,7 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
 import { MessageSquare } from 'lucide-vue-next';
 import { ref } from 'vue';
+import { mainPopupState } from '@/lib/custom/mainPopupState';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -31,16 +32,15 @@ const props = defineProps<{
     chatID?: number;
 }>();
 
-const popupRef = ref<typeof MainPopup>();
 const avatars = ref<Avatar[]>(props.user.avatars ?? []);
 
 function handleSetAsMain(payload: { success: boolean; message: string }) {
     const type = payload.success ? 'success' : 'error';
-    popupRef.value?.show(payload.message, type);
+    mainPopupState.show(payload.message, type);
 }
 
 function handleUsernameChange(payload: { type: string; message: string }) {
-    popupRef.value?.show(payload.message, payload.type);
+    mainPopupState.show(payload.message, payload.type);
 }
 </script>
 
@@ -80,5 +80,4 @@ function handleUsernameChange(payload: { type: string; message: string }) {
         </div>
     </AppLayout>
 
-    <MainPopup ref="popupRef" />
 </template>

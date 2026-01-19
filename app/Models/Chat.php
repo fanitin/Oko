@@ -12,6 +12,11 @@ class Chat extends Model
         'is_self',
     ];
 
+    public function scopeNotFromUser($query, $userId)
+    {
+        return $query->where('user_id', '!=', $userId);
+    }
+
     public function users(){
         return $this->belongsToMany(User::class, 'chat_users', 'chat_id', 'user_id')
             ->withPivot('role', 'last_read_message_id')

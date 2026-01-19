@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Chat;
 
+use App\Events\Messages\MessageDeleted;
 use App\Events\Messages\MessageSent;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\MessageCollection;
@@ -57,7 +58,6 @@ class MessageController extends Controller
         ]);
 
         $oldestMessage = $request->input('cursor');
-        $newestMessage = $message->id - 30 > 0 ? $message->id - 30 : 1;
 
         $query = $chat->messages()
             ->with(['user.mainAvatar', 'media', 'replyTo.user'])
@@ -96,5 +96,39 @@ class MessageController extends Controller
         broadcast(new MessageSent($message))->toOthers();
 
         return new MessageResource($message);
+    }
+
+    public function delete(Request $request, Chat $chat, Message $message)
+    {
+        try {
+            $this->authorize('delete', $message);
+        } catch (AuthorizationException $e) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $isLastMessage = $chat->lastOtherUserMessage()?->id === $message->id;
+        $newLastMessage = null;
+
+        if($isLastMessage) {
+            $newLastMessage = $chat->messages()
+                ->where('id', '<', $message->id)
+                ->notFromUser(auth()->user()->id)
+                ->latest()
+                ->first();
+        }
+
+        $deletedMessageId = $message->id;
+        $originalUserId = $message->user_id;
+
+        $isMessageUnread = $chat->chatUsers()
+            ->where('user_id', '!=', $message->user_id)
+            ->where('last_read_message_id', '<', $message->id)
+            ->exists();
+
+        $message->delete();
+
+        broadcast(new MessageDeleted($deletedMessageId, $originalUserId, $chat->id, $newLastMessage, $isMessageUnread))->toOthers();
+
+        return response()->json(['message' => 'Message deleted successfully'], 200);
     }
 }

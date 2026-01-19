@@ -2,7 +2,6 @@
 import ChatNavBar from '@/components/custom/chat/ChatNavBar.vue';
 import Emoji from '@/components/custom/chat/Emoji.vue';
 import MessagesList from '@/components/custom/chat/MessagesList.vue';
-import MainPopup from '@/components/custom/MainPopup.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/vue3';
@@ -13,6 +12,7 @@ import { sidebarState } from '@/lib/custom/sidebarState';
 import MessageContextMenu from "@/components/custom/chat/MessageContextMenu.vue";
 import { replyState } from "@/lib/custom/replyState";
 import ReplyPreview from '@/components/custom/chat/ReplyPreview.vue';
+import { mainPopupState } from '@/lib/custom/mainPopupState';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -40,7 +40,6 @@ const props = defineProps<{
     };
 }>();
 
-const popupRef = ref<typeof MainPopup>();
 const inputRef = ref<HTMLInputElement | null>(null);
 const message = ref('');
 const messages = ref<any[]>([]);
@@ -100,6 +99,22 @@ useEcho(`chat.${props.chat.id}`, '.message.sent', (e: any) => {
     }
 });
 
+useEcho(`chat.${props.chat.id}`, '.message.deleted', (e: any) => {
+    if (!e.messageId) return;
+
+    const isFromMe = e.originalUserId === myUserId
+    if(isFromMe) return;
+
+
+    messages.value = messages.value.filter((msg) => msg.id !== e.messageId);
+
+    const chat = sidebarState.chats.find(c => c.id === props.chat.id)
+    if(chat) {
+        chat.lastMessage = e.sidebar.lastMessage ?? chat.lastMessage;
+        chat.unreadCount -= e.sidebar.unreadCountDecrement;
+    }
+});
+
 const handleEmojiSelect = (emoji: string) => {
     const input = inputRef.value;
     if (!input) return;
@@ -155,7 +170,7 @@ const fetchAndScrollToMessage = async (messageId: number) => {
         messagesListRef.value?.scrollToMessage(messageId)
 
     } catch (error) {
-        popupRef.value?.show('Failed to load message context.', 'error');
+        mainPopupState.show('Failed to load message context.', 'error');
     } finally {
         isLoadingMore.value = false;
     }
@@ -182,7 +197,7 @@ const loadMoreMessages = async () => {
             hasMoreMessages.value = false;
         }
     } catch (error) {
-        popupRef.value?.show('Failed to load more messages.', 'error');
+        mainPopupState.show('Failed to load more messages.', 'error');
     } finally {
         isLoadingMore.value = false;
     }
@@ -230,6 +245,5 @@ const loadMoreMessages = async () => {
         </div>
     </AppLayout>
 
-    <MainPopup ref="popupRef" />
     <MessageContextMenu />
 </template>

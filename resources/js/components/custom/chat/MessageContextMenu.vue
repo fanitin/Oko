@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { messageContextMenu } from '@/lib/custom/messageContextMenu'
 import { replyState } from '@/lib/custom/replyState'
+import axios from 'axios';
+import { sidebarState } from '@/lib/custom/sidebarState';
+import { computed } from 'vue';
+import { mainPopupState } from '@/lib/custom/mainPopupState';
 
+const currChatId = computed(() => sidebarState.activeChatId)
 function close() {
     messageContextMenu.open = false
 }
@@ -26,7 +31,10 @@ function edit() {
 }
 
 function remove() {
-    // delete api
+        axios.delete(route('chat.messages.delete', {chat: currChatId.value, message: messageContextMenu.message?.id}))
+            .then(() => {
+                mainPopupState.show('Message deleted successfully.', 'success')
+            })
     close()
 }
 </script>

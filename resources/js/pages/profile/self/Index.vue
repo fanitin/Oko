@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import MainPopup from '@/components/custom/MainPopup.vue';
 import AddAvatarButton from '@/components/custom/profile/AddAvatarButton.vue';
 import AvatarSlider from '@/components/custom/profile/AvatarSlider.vue';
 import UsernameProfileComponent from '@/components/custom/profile/UsernameProfileComponent.vue';
@@ -8,6 +7,7 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
 import { Settings } from 'lucide-vue-next';
 import { ref } from 'vue';
+import { mainPopupState } from '@/lib/custom/mainPopupState';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -31,12 +31,11 @@ const props = defineProps<{
     };
 }>();
 
-const popupRef = ref<typeof MainPopup>();
 const avatars = ref<Avatar[]>(props.user.avatars ?? []);
 
 function handleAvatarUploaded(payload: { success: boolean; message: string; avatars?: Avatar[] }) {
     const type = payload.success ? 'success' : 'error';
-    popupRef.value?.show(payload.message, type);
+    mainPopupState.show(payload.message, type);
     if (payload.avatars != null) {
         avatars.value = payload.avatars;
     }
@@ -44,11 +43,11 @@ function handleAvatarUploaded(payload: { success: boolean; message: string; avat
 
 function handleSetAsMain(payload: { success: boolean; message: string }) {
     const type = payload.success ? 'success' : 'error';
-    popupRef.value?.show(payload.message, type);
+    mainPopupState.show(payload.message, type);
 }
 
 function handleUsernameChange(payload: { type: string; message: string }) {
-    popupRef.value?.show(payload.message, payload.type);
+    mainPopupState.show(payload.message, payload.type);
 }
 </script>
 
@@ -99,5 +98,4 @@ function handleUsernameChange(payload: { type: string; message: string }) {
         </div>
     </AppLayout>
 
-    <MainPopup ref="popupRef" />
 </template>

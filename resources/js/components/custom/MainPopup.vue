@@ -1,32 +1,9 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-
-type PopupType = 'success' | 'error' | 'info' | 'warning';
-
-interface Props {
-    duration?: number;
-}
-
-const props = defineProps<Props>();
-const isVisible = ref(false);
-const popupMessage = ref('');
-const type = ref<PopupType>('info');
-const duration = props.duration || 3000;
-
-function show(message: string, popupType: PopupType = 'info') {
-    popupMessage.value = message;
-    type.value = popupType;
-    isVisible.value = true;
-
-    setTimeout(() => {
-        isVisible.value = false;
-    }, duration);
-}
-
-defineExpose({ show });
+import { computed } from 'vue';
+import { mainPopupState } from '@/lib/custom/mainPopupState';
 
 const bgColor = computed(() => {
-    switch (type.value) {
+    switch (mainPopupState.type) {
         case 'success':
             return 'bg-emerald-500 dark:bg-purple-600';
         case 'error':
@@ -40,7 +17,7 @@ const bgColor = computed(() => {
 });
 
 const textColor = computed(() => {
-    switch (type.value) {
+    switch (mainPopupState.type) {
         case 'warning':
             return 'text-gray-900 dark:text-gray-100';
         default:
@@ -52,14 +29,14 @@ const textColor = computed(() => {
 <template>
     <transition name="fade">
         <div
-            v-if="isVisible"
+            v-if="mainPopupState.isVisible"
             :class="[
         'fixed top-5 right-5 z-50 rounded-lg px-5 py-3 shadow-lg transition-all duration-300 transform hover:scale-105',
         bgColor,
         textColor,
       ]"
         >
-            {{ popupMessage }}
+            {{ mainPopupState.message }}
         </div>
     </transition>
 </template>
