@@ -36,9 +36,7 @@ class MessageSent implements ShouldBroadcast
         ];
 
         foreach ($this->message->chat->users as $user) {
-            if( $user->id !== $this->message->user_id ){
-                $channels[] = new PrivateChannel('user.' . $user->id);
-            }
+            $channels[] = new PrivateChannel('user.' . $user->id);
         }
 
         return $channels;
@@ -51,7 +49,6 @@ class MessageSent implements ShouldBroadcast
 
     public function broadcastWith(): array
     {
-
         return [
             'message' => new MessageResource($this->message),
             'sidebar' => [

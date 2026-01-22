@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import ChatNavBar from '@/components/custom/chat/ChatNavBar.vue';
 import Emoji from '@/components/custom/chat/Emoji.vue';
+import MessageContextMenu from '@/components/custom/chat/MessageContextMenu.vue';
 import MessagesList from '@/components/custom/chat/MessagesList.vue';
+import ReplyPreview from '@/components/custom/chat/ReplyPreview.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { mainPopupState } from '@/lib/custom/mainPopupState';
+import { replyState } from '@/lib/custom/replyState';
+import { sidebarState } from '@/lib/custom/sidebarState';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/vue3';
 import { useEcho } from '@laravel/echo-vue';
 import axios from 'axios';
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
-import { sidebarState } from '@/lib/custom/sidebarState';
-import MessageContextMenu from "@/components/custom/chat/MessageContextMenu.vue";
-import { replyState } from "@/lib/custom/replyState";
-import ReplyPreview from '@/components/custom/chat/ReplyPreview.vue';
-import { mainPopupState } from '@/lib/custom/mainPopupState';
+import { computed, nextTick, onMounted, onBeforeUnmount, ref, watch } from 'vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -48,8 +48,7 @@ const isLoadingMore = ref(false);
 
 const page = usePage();
 const myUserId = page.props.auth.user.id;
-const messagesListRef = ref<InstanceType<typeof MessagesList>>(null)
-
+const messagesListRef = ref<InstanceType<typeof MessagesList>>(null);
 
 const messagesWithMeta = computed(() => {
     if (!Array.isArray(messages.value)) return [];
@@ -62,25 +61,29 @@ const messagesWithMeta = computed(() => {
 
 onMounted(() => {
     fetchMessages();
-    sidebarState.activeChatId = props.chat.id
-
+    sidebarState.activeChatId = props.chat.id;
+    markAsRead();
 });
 
-onUnmounted(() => {
-    sidebarState.activeChatId = 0
-})
-
-watch(() => replyState.message, (newMessage) => {
-    if (newMessage) {
-        inputRef.value?.focus();
-    }
+onBeforeUnmount(() => {
+    console.log(123);
+    sidebarState.activeChatId = 0;
 });
+
+watch(
+    () => replyState.message,
+    (newMessage) => {
+        if (newMessage) {
+            inputRef.value?.focus();
+        }
+    },
+);
 
 useEcho(`chat.${props.chat.id}`, '.message.sent', (e: any) => {
-    if (!e.message) return
+    if (!e.message) return;
 
-    const isFromMe = e.message.user.id === myUserId
-    if(e.message.user.id === myUserId) return;
+    const isFromMe = e.message.user.id === myUserId;
+    if (e.message.user.id === myUserId) return;
 
     const messageExists = messages.value.some((msg) => msg.id === e.message.id);
     if (!messageExists) {
@@ -93,7 +96,7 @@ useEcho(`chat.${props.chat.id}`, '.message.sent', (e: any) => {
 
 useEcho(`chat.${props.chat.id}`, '.message.deleted', (e: any) => {
     if (!e.messageId) return;
-    if(e.originalUserId === myUserId) return;
+    if (e.originalUserId === myUserId) return;
 
     messages.value = messages.value.filter((msg) => msg.id !== e.messageId);
 });
@@ -123,7 +126,7 @@ const send = () => {
         })
         .then((response) => {
             messages.value.push({
-                ...response.data.data
+                ...response.data.data,
             });
         });
 
@@ -141,7 +144,13 @@ const fetchAndScrollToMessage = async (messageId: number) => {
     isLoadingMore.value = true;
     const oldestMessageId = messages.value[0]?.id;
     try {
-        const res = await axios.get(route('chat.messages.context', { chat: props.chat.id, message: messageId, cursor: oldestMessageId}));
+        const res = await axios.get(
+            route('chat.messages.context', {
+                chat: props.chat.id,
+                message: messageId,
+                cursor: oldestMessageId,
+            }),
+        );
         if (res.data.data.length > 0) {
             messages.value = [...res.data.data, ...messages.value];
         }
@@ -149,9 +158,8 @@ const fetchAndScrollToMessage = async (messageId: number) => {
             hasMoreMessages.value = false;
         }
 
-        await nextTick()
-        messagesListRef.value?.scrollToMessage(messageId)
-
+        await nextTick();
+        messagesListRef.value?.scrollToMessage(messageId);
     } catch (error) {
         mainPopupState.show('Failed to load message context.', 'error');
     } finally {
@@ -185,6 +193,13 @@ const loadMoreMessages = async () => {
         isLoadingMore.value = false;
     }
 };
+
+const markAsRead = () => {
+    axios.post(route('chat.messages.mark-as-read', props.chat.id))
+        .then(() => {
+            //TODO update sidebarState
+        });
+};
 </script>
 
 <template>
@@ -207,7 +222,7 @@ const loadMoreMessages = async () => {
             <div class="border-t border-gray-300 bg-gray-100 p-3 dark:border-gray-700 dark:bg-gray-900">
                 <ReplyPreview />
                 <form @submit.prevent="send" class="flex items-center gap-3">
-                    <Emoji @select="handleEmojiSelect"/>
+                    <Emoji @select="handleEmojiSelect" />
 
                     <input
                         ref="inputRef"

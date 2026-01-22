@@ -34,7 +34,8 @@ function remove() {
         axios.delete(route('chat.messages.delete', {chat: currChatId.value, message: messageContextMenu.message?.id}))
             .then(() => {
                 mainPopupState.show('Message deleted successfully.', 'success')
-            })
+            });
+
     close()
 }
 </script>

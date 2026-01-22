@@ -17,37 +17,42 @@ class Chat extends Model
         return $query->where('user_id', '!=', $userId);
     }
 
-    public function users(){
+    public function users()
+    {
         return $this->belongsToMany(User::class, 'chat_users', 'chat_id', 'user_id')
             ->withPivot('role', 'last_read_message_id')
             ->withTimestamps();
     }
 
-    public function messages(){
+    public function messages()
+    {
         return $this->hasMany(Message::class);
     }
 
-    public function lastMessage(){
+    public function lastMessage()
+    {
         return $this->hasOne(Message::class)->latestOfMany();
     }
 
-    public function lastOtherUserMessage()
+    public function lastOtherUserMessage(int $userId)
     {
-        $user = auth()->user();
         return $this->hasOne(Message::class)
-            ->where('user_id', '!=', $user->id)
-            ->latest();
+            ->where('user_id', '!=', $userId)
+            ->latestOfMany();
     }
 
-    public function chatUsers(){
+    public function chatUsers()
+    {
         return $this->hasMany(ChatUser::class);
     }
 
-    public function chatAvatars(){
+    public function chatAvatars()
+    {
         return $this->hasMany(ChatAvatar::class);
     }
 
-    public function mainAvatar(){
+    public function mainAvatar()
+    {
         return $this->hasOne(ChatAvatar::class)->where('is_main', true);
     }
 }
