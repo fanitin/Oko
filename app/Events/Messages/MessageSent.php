@@ -31,9 +31,17 @@ class MessageSent implements ShouldBroadcast
      */
     public function broadcastOn(): array
     {
-        return [
-            new PrivateChannel('chat.'.$this->message->chat_id),
+        $channels = [
+            new PrivateChannel('chat.' . $this->message->chat_id),
         ];
+
+        foreach ($this->message->chat->users as $user) {
+            if( $user->id !== $this->message->user_id ){
+                $channels[] = new PrivateChannel('user.' . $user->id);
+            }
+        }
+
+        return $channels;
     }
 
     public function broadcastAs(): string
@@ -48,7 +56,7 @@ class MessageSent implements ShouldBroadcast
             'message' => new MessageResource($this->message),
             'sidebar' => [
                 'chatId' => $this->message->chat_id,
-                'userId' => $this->message->user_id,
+                'senderId' => $this->message->user_id,
                 'lastMessage' => $this->message->body,
                 'unreadCountIncrement' => 1,
             ],

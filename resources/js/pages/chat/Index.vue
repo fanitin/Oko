@@ -7,7 +7,7 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/vue3';
 import { useEcho } from '@laravel/echo-vue';
 import axios from 'axios';
-import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { sidebarState } from '@/lib/custom/sidebarState';
 import MessageContextMenu from "@/components/custom/chat/MessageContextMenu.vue";
 import { replyState } from "@/lib/custom/replyState";
@@ -62,7 +62,13 @@ const messagesWithMeta = computed(() => {
 
 onMounted(() => {
     fetchMessages();
+    sidebarState.activeChatId = props.chat.id
+
 });
+
+onUnmounted(() => {
+    sidebarState.activeChatId = 0
+})
 
 watch(() => replyState.message, (newMessage) => {
     if (newMessage) {
@@ -74,7 +80,7 @@ useEcho(`chat.${props.chat.id}`, '.message.sent', (e: any) => {
     if (!e.message) return
 
     const isFromMe = e.message.user.id === myUserId
-    if(isFromMe) return;
+    if(e.message.user.id === myUserId) return;
 
     const messageExists = messages.value.some((msg) => msg.id === e.message.id);
     if (!messageExists) {
@@ -83,36 +89,13 @@ useEcho(`chat.${props.chat.id}`, '.message.sent', (e: any) => {
             isFromMe: isFromMe,
         });
     }
-
-    const chat = sidebarState.chats.find(c => c.id === props.chat.id)
-
-    if (chat) {
-        if (!isFromMe) {
-            chat.lastMessage = e.message.body
-            chat.unreadCount = (chat.unreadCount ?? 0) + 1
-        }
-
-        sidebarState.chats = [
-            chat,
-            ...sidebarState.chats.filter(c => c.id !== chat.id),
-        ]
-    }
 });
 
 useEcho(`chat.${props.chat.id}`, '.message.deleted', (e: any) => {
     if (!e.messageId) return;
-
-    const isFromMe = e.originalUserId === myUserId
-    if(isFromMe) return;
-
+    if(e.originalUserId === myUserId) return;
 
     messages.value = messages.value.filter((msg) => msg.id !== e.messageId);
-
-    const chat = sidebarState.chats.find(c => c.id === props.chat.id)
-    if(chat) {
-        chat.lastMessage = e.sidebar.lastMessage ?? chat.lastMessage;
-        chat.unreadCount -= e.sidebar.unreadCountDecrement;
-    }
 });
 
 const handleEmojiSelect = (emoji: string) => {

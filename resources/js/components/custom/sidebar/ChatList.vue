@@ -1,13 +1,18 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue';
+import { computed, ref } from 'vue';
 import { sidebarState } from '@/lib/custom/sidebarState';
 import ChatItem from './ChatItem.vue'
 import { usePage } from '@inertiajs/vue3'
+import { useEcho } from '@laravel/echo-vue';
 
 const page = usePage()
+const user = ref(page.props.auth.user);
 
-if (sidebarState.chats.length === 0) {
-    sidebarState.chats = JSON.parse(JSON.stringify(page.props.chats ?? []))
+if (!sidebarState.chats.length) {
+    sidebarState.chats = page.props.chats.map((c: any) => ({
+        ...c,
+        unreadCount: c.unreadCount ?? 0,
+    }))
 }
 
 const chats = computed(() => sidebarState.chats)
@@ -16,17 +21,9 @@ const selectChat = (chatId: number) => {
     sidebarState.activeChatId = chatId
 }
 
-watch(
-    () => page.url,
-    (url) => {
-        const match = url.match(/^\/chat\/(\d+)/)
-
-        sidebarState.activeChatId = match
-            ? Number(match[1])
-            : 0
-    },
-    { immediate: true }
-)
+useEcho(`user.${user.value.id}`, '.message.sent', (e: any) => {
+    sidebarState.updateFromMessage(e.sidebar, user.value.id)
+})
 </script>
 
 <template>

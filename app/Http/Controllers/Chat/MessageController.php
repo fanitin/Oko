@@ -91,7 +91,7 @@ class MessageController extends Controller
             'reply_for_message_id' => $validated['reply_for_message_id'] ?? null,
         ]);
 
-        $message->load('user.mainAvatar', 'media', 'replyTo.user');
+        $message->load('user.mainAvatar', 'media', 'replyTo.user', 'chat.users');
 
         broadcast(new MessageSent($message))->toOthers();
 
