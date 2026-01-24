@@ -99,7 +99,6 @@ function openMenu(e: MouseEvent) {
             username: props.message.user.username
         }
     };
-    console.log(messageContextMenu)
 }
 </script>
 

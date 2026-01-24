@@ -12,7 +12,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class MessageDeleted implements ShouldBroadcast
+class MessageMarkAsRead implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -20,12 +20,8 @@ class MessageDeleted implements ShouldBroadcast
      * Create a new event instance.
      */
     public function __construct(
-        public int      $deletedMessageId,
-        public int      $originalUserId,
-        public int      $chatId,
-        public ?Message $message,
-        public bool     $isMessageUnread,
-        public          $chatUsers,
+        public int $chatId,
+        public int $userId,
     )
     {
 
@@ -38,33 +34,21 @@ class MessageDeleted implements ShouldBroadcast
      */
     public function broadcastOn(): array
     {
-        $channels = [
+        return [
             new PrivateChannel('chat.' . $this->chatId),
         ];
-
-        foreach ($this->chatUsers as $user) {
-            $channels[] = new PrivateChannel('user.' . $user->id);
-        }
-
-
-        return $channels;
     }
 
     public function broadcastAs(): string
     {
-        return 'message.deleted';
+        return 'message.markAsRead';
     }
 
     public function broadcastWith(): array
     {
-
         return [
-            'messageId' => $this->deletedMessageId,
-            'sidebar' => [
-                'chatId' => $this->chatId,
-                'lastMessage' => $this->message?->body,
-                'unreadCountDecrement' => $this->isMessageUnread ? 1 : 0,
-            ],
+            'chatId' => $this->chatId,
+            'userId' => $this->userId,
         ];
     }
 }

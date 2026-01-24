@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { mainPopupState } from '@/lib/custom/mainPopupState';
+import { mainPopupState } from '@/lib/custom/states/mainPopupState';
 
 const bgColor = computed(() => {
     switch (mainPopupState.type) {

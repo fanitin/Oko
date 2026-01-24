@@ -23,6 +23,24 @@ export const sidebarState = reactive({
     markAsRead(chatId: number) {
         const chat = this.chats.find(c => c.id === chatId)
         if (chat) chat.unreadCount = 0
+    },
+
+    deletedMessage(messageId: number, sidebar: any) {
+        if(!messageId) return;
+
+        const chat = this.chats.find(c => c.id === sidebar.chatId)
+        if (!chat) return;
+
+        chat.lastMessage = sidebar.lastMessage;
+
+        if(this.activeChatId !== chat.id) {
+            chat.unreadCount = chat.unreadCount > 0 ? ((chat.unreadCount ?? 0) - sidebar.unreadCountDecrement) : 0;
+        }
+    },
+
+    resetUnreadCount(chatId: number) {
+        const chat = this.chats.find(c => c.id === chatId)
+        if (chat) chat.unreadCount = 0
     }
 })
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { sidebarState } from '@/lib/custom/sidebarState';
+import { sidebarState } from '@/lib/custom/states/sidebarState';
 import ChatItem from './ChatItem.vue'
 import { usePage } from '@inertiajs/vue3'
 import { useEcho } from '@laravel/echo-vue';
@@ -23,6 +23,11 @@ const selectChat = (chatId: number) => {
 
 useEcho(`user.${user.value.id}`, '.message.sent', (e: any) => {
     sidebarState.updateFromMessage(e.sidebar, user.value.id)
+})
+
+useEcho(`user.${user.value.id}`, '.message.deleted', (e: any) => {
+    console.log('message.deleted event received', e)
+    sidebarState.deletedMessage(e.messageId, e.sidebar)
 })
 </script>
 

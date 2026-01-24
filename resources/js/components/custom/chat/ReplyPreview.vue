@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { replyState } from '@/lib/custom/replyState'
+import { replyState } from '@/lib/custom/states/replyState'
 import { X } from 'lucide-vue-next'
 
 function cancelReply() {

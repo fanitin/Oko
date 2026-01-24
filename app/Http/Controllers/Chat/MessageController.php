@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Chat;
 
 use App\Events\Messages\MessageDeleted;
+use App\Events\Messages\MessageMarkAsRead;
 use App\Events\Messages\MessageSent;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\MessageCollection;
@@ -106,8 +107,8 @@ class MessageController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        $isLastMessage = $chat->lastMessage()?->id === $message->id;
-        $newLastMessage = null;
+        $isLastMessage = $chat->lastMessage?->id === $message->id;
+        $newLastMessage = $chat?->lastMessage;
 
         if ($isLastMessage) {
             $newLastMessage = $chat->messages()
@@ -124,9 +125,11 @@ class MessageController extends Controller
             ->where('last_read_message_id', '<', $message->id)
             ->exists();
 
+        $chatUsers = $chat->users;
+
         $message->delete();
 
-        broadcast(new MessageDeleted($deletedMessageId, $originalUserId, $chat->id, $newLastMessage, $isMessageUnread));
+        broadcast(new MessageDeleted($deletedMessageId, $originalUserId, $chat->id, $newLastMessage, $isMessageUnread, $chatUsers));
 
         return response()->json(['message' => 'Message deleted successfully'], 200);
     }
@@ -139,7 +142,7 @@ class MessageController extends Controller
             ->where('user_id', $user->id)
             ->update(['last_read_message_id' => $chat->lastOtherUserMessage($user->id)?->first()->id ?? null]);
 
-//        broadcast(new MessageMarkAsRead($chat->id, $user->id))->toOthers();
+        broadcast(new MessageMarkAsRead($chat->id, $user->id))->toOthers();
         return response()->noContent();
     }
 }

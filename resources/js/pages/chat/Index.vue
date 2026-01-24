@@ -5,18 +5,19 @@ import MessageContextMenu from '@/components/custom/chat/MessageContextMenu.vue'
 import MessagesList from '@/components/custom/chat/MessagesList.vue';
 import ReplyPreview from '@/components/custom/chat/ReplyPreview.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { mainPopupState } from '@/lib/custom/mainPopupState';
-import { replyState } from '@/lib/custom/replyState';
-import { sidebarState } from '@/lib/custom/sidebarState';
+import { mainPopupState } from '@/lib/custom/states/mainPopupState';
+import { replyState } from '@/lib/custom/states/replyState';
+import { sidebarState } from '@/lib/custom/states/sidebarState';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/vue3';
 import { useEcho } from '@laravel/echo-vue';
 import axios from 'axios';
 import { computed, nextTick, onMounted, onBeforeUnmount, ref, watch } from 'vue';
+import { debounce } from 'lodash-es'
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Chat', //change later
+        title: 'Chat',
         href: '/chat',
     },
 ];
@@ -59,14 +60,21 @@ const messagesWithMeta = computed(() => {
     }));
 });
 
+const onFocus = () => {
+    if (sidebarState.activeChatId === props.chat.id) {
+        markAsRead()
+    }
+}
+
 onMounted(() => {
+    window.addEventListener('focus', onFocus)
     fetchMessages();
     sidebarState.activeChatId = props.chat.id;
     markAsRead();
 });
 
 onBeforeUnmount(() => {
-    console.log(123);
+    window.removeEventListener('focus', onFocus)
     sidebarState.activeChatId = 0;
 });
 
@@ -91,14 +99,25 @@ useEcho(`chat.${props.chat.id}`, '.message.sent', (e: any) => {
             ...e.message,
             isFromMe: isFromMe,
         });
+        markAsReadDebounced();
     }
 });
 
 useEcho(`chat.${props.chat.id}`, '.message.deleted', (e: any) => {
     if (!e.messageId) return;
-    if (e.originalUserId === myUserId) return;
 
     messages.value = messages.value.filter((msg) => msg.id !== e.messageId);
+});
+
+useEcho(`chat.${props.chat.id}`, '.message.markAsRead', (e: any) => {
+    if (!e.chatId) return;
+    if(!e.userId) return;
+
+    messages.value.map((msg) => {
+        if(msg.user.id != e.userId) {
+            msg.status = 'seen';
+        }
+    })
 });
 
 const handleEmojiSelect = (emoji: string) => {
@@ -197,9 +216,16 @@ const loadMoreMessages = async () => {
 const markAsRead = () => {
     axios.post(route('chat.messages.mark-as-read', props.chat.id))
         .then(() => {
-            //TODO update sidebarState
+            sidebarState.resetUnreadCount(props.chat.id);
         });
 };
+
+const markAsReadDebounced = debounce(() => {
+    if (sidebarState.activeChatId !== props.chat.id) return
+    if (!document.hasFocus()) return
+
+    markAsRead()
+}, 3000)
 </script>
 
 <template>

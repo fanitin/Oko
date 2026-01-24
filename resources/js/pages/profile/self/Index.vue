@@ -7,7 +7,7 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
 import { Settings } from 'lucide-vue-next';
 import { ref } from 'vue';
-import { mainPopupState } from '@/lib/custom/mainPopupState';
+import { mainPopupState } from '@/lib/custom/states/mainPopupState';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {

@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { messageContextMenu } from '@/lib/custom/messageContextMenu'
-import { replyState } from '@/lib/custom/replyState'
+import { replyState } from '@/lib/custom/states/replyState'
 import axios from 'axios';
-import { sidebarState } from '@/lib/custom/sidebarState';
+import { sidebarState } from '@/lib/custom/states/sidebarState';
 import { computed } from 'vue';
-import { mainPopupState } from '@/lib/custom/mainPopupState';
+import { mainPopupState } from '@/lib/custom/states/mainPopupState';
 
 const currChatId = computed(() => sidebarState.activeChatId)
 function close() {

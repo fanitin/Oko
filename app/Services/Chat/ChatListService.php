@@ -32,7 +32,7 @@ class ChatListService
             'type' => $this->resolveType($chat),
             'name' => $this->resolveName($chat, $userId),
             'avatar' => $this->resolveAvatar($chat, $userId),
-            'lastMessage' => $chat->lastMessage()->first()?->body,
+            'lastMessage' => $chat->lastMessage?->body,
             'unreadCount' => $this->resolveUnreadCount($chat, $userId),
         ];
     }
