@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { useSidebar } from '@/components/ui/sidebar';
 import { computed } from 'vue';
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
+import { Check, CheckCheck } from 'lucide-vue-next';
+import { format, isToday, isThisWeek } from 'date-fns';
 
 const { state } = useSidebar();
 
@@ -9,23 +11,56 @@ const props = defineProps<{
     chat: {
         id: number
         name?: string
-        lastMessage?: string
+        lastMessage?: {
+            id: number
+            user_id: number
+            chat_id: number
+            body: string | null
+            status: 'delivered' | 'seen'
+            created_at?: string
+        } | null
         avatar?: string
         unreadCount?: number
     };
 }>();
+
+const page = usePage();
 
 const isCollapsed = computed(() => state.value === 'collapsed');
 
 const safeChat = computed(() => ({
     id: props.chat.id ?? 0,
     name: props.chat.name ?? 'Unknown user',
-    lastMessage: props.chat.lastMessage ?? 'No messages yet',
+    lastMessage: {
+        id: props.chat.lastMessage?.id ?? 0,
+        user_id: props.chat.lastMessage?.user_id ?? 0,
+        chat_id: props.chat.lastMessage?.chat_id ?? 0,
+        body: props.chat.lastMessage?.body ?? 'No messages yet',
+        created_at: props.chat.lastMessage?.created_at ?? null,
+        status: props.chat.lastMessage?.status,
+    },
     avatar: props.chat.avatar ?? null,
     unreadCount: (props.chat.unreadCount && props.chat.unreadCount > 99 ? '99+' : props.chat.unreadCount) ?? 0,
 }));
 
 const firstLetter = computed(() => (safeChat.value.name ? safeChat.value.name.charAt(0) : '?'));
+
+const lastMessageTime = computed(() => {
+    const created = safeChat.value.lastMessage?.created_at;
+    if (!created) return '';
+    const date = new Date(created);
+    if (isToday(date)) {
+        return format(date, 'HH:mm');
+    }
+    if (isThisWeek(date, { weekStartsOn: 1 })) {
+        return format(date, 'EEEE');
+    }
+    return format(date, 'MMM d, yyyy');
+});
+
+const isFromMe = computed(() => {
+    return safeChat.value.lastMessage?.user_id === page.props.auth.user.id;
+});
 </script>
 
 <template>
@@ -64,9 +99,20 @@ const firstLetter = computed(() => (safeChat.value.name ? safeChat.value.name.ch
                         {{ safeChat.unreadCount }}
                     </span>
                 </div>
-                <p class="truncate text-sm text-gray-700 dark:text-gray-400">
-                    {{ safeChat.lastMessage }}
-                </p>
+                <div class="flex items-center justify-between">
+                    <p class="truncate text-sm text-gray-700 dark:text-gray-400">
+                        {{ safeChat.lastMessage?.body }}
+                    </p>
+                    <div class="flex items-center gap-1 ml-2 min-w-[70px] justify-end">
+                        <span v-if="isFromMe">
+                            <CheckCheck v-if="safeChat.lastMessage?.status === 'seen'" class="h-4 w-4 text-cyan-300" />
+                            <Check v-else-if="safeChat.lastMessage?.status === 'delivered'" class="h-4 w-4" />
+                        </span>
+                        <span class="text-xs text-gray-400">
+                            {{ lastMessageTime }}
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
     </Link>
@@ -75,5 +121,8 @@ const firstLetter = computed(() => (safeChat.value.name ? safeChat.value.name.ch
 <style scoped>
 .flex-1 {
     transition: max-width 0.3s ease, opacity 0.3s ease;
+}
+.min-w-\[70px\] {
+    min-width: 70px;
 }
 </style>

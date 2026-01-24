@@ -62,9 +62,18 @@ class MessageDeleted implements ShouldBroadcast
             'messageId' => $this->deletedMessageId,
             'sidebar' => [
                 'chatId' => $this->chatId,
-                'lastMessage' => $this->message?->body,
+                'lastMessage' => $this->resolveMessage($this->message),
                 'unreadCountDecrement' => $this->isMessageUnread ? 1 : 0,
             ],
         ];
+    }
+
+    private function resolveMessage($message){
+        if(!$message){
+            return null;
+        }
+        $resource = new MessageResource($message);
+        $resource->chatUsers = $this->chatUsers;
+        return $resource->resolve();
     }
 }

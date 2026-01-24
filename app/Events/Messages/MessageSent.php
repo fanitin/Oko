@@ -54,7 +54,7 @@ class MessageSent implements ShouldBroadcast
             'sidebar' => [
                 'chatId' => $this->message->chat_id,
                 'senderId' => $this->message->user_id,
-                'lastMessage' => $this->message->body,
+                'lastMessage' => (new MessageResource($this->message))->resolve(),
                 'unreadCountIncrement' => 1,
             ],
         ];

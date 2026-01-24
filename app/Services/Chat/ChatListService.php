@@ -2,6 +2,7 @@
 
 namespace App\Services\Chat;
 
+use App\Http\Resources\MessageResource;
 use App\Models\Chat;
 use Illuminate\Support\Facades\Auth;
 
@@ -12,7 +13,7 @@ class ChatListService
         $userId = Auth::id();
 
         $chats = Chat::with([
-            'lastMessage',
+            'lastMessage.chat.users',
             'chatUsers.user.mainAvatar',
             'chatAvatars',
             'messages:id,chat_id',
@@ -32,9 +33,19 @@ class ChatListService
             'type' => $this->resolveType($chat),
             'name' => $this->resolveName($chat, $userId),
             'avatar' => $this->resolveAvatar($chat, $userId),
-            'lastMessage' => $chat->lastMessage?->body,
+            'lastMessage' => $this->resolveMessage($chat->lastMessage),
             'unreadCount' => $this->resolveUnreadCount($chat, $userId),
         ];
+    }
+
+    protected function resolveMessage($message){
+        if(!$message){
+            return null;
+        }
+
+        $resource = new MessageResource($message);
+        $resource->chatUsers = $message->chat->users;
+        return $resource->resolve();
     }
 
     protected function resolveType(Chat $chat): string
@@ -90,7 +101,7 @@ class ChatListService
         }
 
         return $chat->messages()
-            ->where('id', '>', $chatUser->pivot->last_read_message_id ?? 0)
+            ->where('id', '>', $chatUser->last_read_message_id ?? 0)
             ->where('user_id', '!=', $userId)
             ->count();
     }

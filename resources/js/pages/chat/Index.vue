@@ -89,7 +89,6 @@ watch(
 
 useEcho(`chat.${props.chat.id}`, '.message.sent', (e: any) => {
     if (!e.message) return;
-
     const isFromMe = e.message.user.id === myUserId;
     if (e.message.user.id === myUserId) return;
 

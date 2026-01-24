@@ -27,6 +27,8 @@ class MessageResource extends JsonResource
                     ? asset('storage/' . $this->user->mainAvatar->path)
                     : null,
             ],
+            'user_id' => $this->user_id,
+            'chat_id' => $this->chat_id,
             'body' => $this->body,
             'edited_at' => $this->edited_at,
             'reply_to' => $this->replyTo
@@ -52,9 +54,12 @@ class MessageResource extends JsonResource
 
     protected function resolveStatus()
     {
-        if(!$this->chatUsers) {
-            return 'delivered';
+        if (!$this->chatUsers) {
+            $this->chatUsers = $this->whenLoaded('chat', function () {
+                return $this->resource->chat->users;
+            }, collect());
         }
+
         if ($this->user_id === auth()->id()) {
             $seenByAnyone = $this->chatUsers
                 ->where('id', '!=', $this->user_id)

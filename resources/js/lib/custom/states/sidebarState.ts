@@ -8,7 +8,7 @@ export const sidebarState = reactive({
         const chat = this.chats.find(c => c.id === sidebar.chatId)
         if (!chat) return
 
-        chat.lastMessage = sidebar.lastMessage
+        chat.lastMessage = sidebar.lastMessage;
 
         if (this.activeChatId !== chat.id && sidebar.senderId !== myUserId) {
             chat.unreadCount = (chat.unreadCount ?? 0) + sidebar.unreadCountIncrement
@@ -40,7 +40,17 @@ export const sidebarState = reactive({
 
     resetUnreadCount(chatId: number) {
         const chat = this.chats.find(c => c.id === chatId)
-        if (chat) chat.unreadCount = 0
+        if (!chat) return;
+
+        chat.unreadCount = 0
+    },
+
+    updateSeenStatus(data: any, userId: number) {
+        if(data.userId === userId) return;
+        const chat = this.chats.find(c => c.id === data.chatId)
+        if (!chat || !chat.lastMessage) return;
+
+        chat.lastMessage.status = 'seen';
     }
 })
 

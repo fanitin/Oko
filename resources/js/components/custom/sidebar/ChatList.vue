@@ -26,8 +26,11 @@ useEcho(`user.${user.value.id}`, '.message.sent', (e: any) => {
 })
 
 useEcho(`user.${user.value.id}`, '.message.deleted', (e: any) => {
-    console.log('message.deleted event received', e)
     sidebarState.deletedMessage(e.messageId, e.sidebar)
+})
+
+useEcho(`user.${user.value.id}`, '.message.markAsRead', (e: any) => {
+    sidebarState.updateSeenStatus(e, user.value.id)
 })
 </script>
 

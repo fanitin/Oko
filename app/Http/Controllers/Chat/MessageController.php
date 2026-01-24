@@ -13,6 +13,7 @@ use App\Models\Message;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class MessageController extends Controller
 {
@@ -140,9 +141,11 @@ class MessageController extends Controller
 
         $chat->chatUsers()
             ->where('user_id', $user->id)
-            ->update(['last_read_message_id' => $chat->lastOtherUserMessage($user->id)?->first()->id ?? null]);
+            ->update(['last_read_message_id' => $chat->lastMessage()?->first()->id ?? null]);
 
-        broadcast(new MessageMarkAsRead($chat->id, $user->id))->toOthers();
+        $chatUsers = $chat->users;
+
+        broadcast(new MessageMarkAsRead($chat->id, $user->id, $chatUsers))->toOthers();
         return response()->noContent();
     }
 }

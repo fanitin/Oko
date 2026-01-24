@@ -34,13 +34,6 @@ class Chat extends Model
         return $this->hasOne(Message::class)->latestOfMany();
     }
 
-    public function lastOtherUserMessage(int $userId)
-    {
-        return $this->hasOne(Message::class)
-            ->where('user_id', '!=', $userId)
-            ->latestOfMany();
-    }
-
     public function chatUsers()
     {
         return $this->hasMany(ChatUser::class);
