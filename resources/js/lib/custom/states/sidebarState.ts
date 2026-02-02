@@ -53,4 +53,3 @@ export const sidebarState = reactive({
         chat.lastMessage.status = 'seen';
     }
 })
-

@@ -14,6 +14,7 @@ import { useEcho } from '@laravel/echo-vue';
 import axios from 'axios';
 import { computed, nextTick, onMounted, onBeforeUnmount, ref, watch } from 'vue';
 import { debounce } from 'lodash-es'
+import { ArrowDown } from 'lucide-vue-next';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -49,7 +50,10 @@ const isLoadingMore = ref(false);
 
 const page = usePage();
 const myUserId = page.props.auth.user.id;
-const messagesListRef = ref<InstanceType<typeof MessagesList>>(null);
+const messagesListRef = ref<InstanceType<typeof MessagesList> | null>(null);
+
+const isUserAtBottom = ref(true);
+const newMessagesCount = ref(0);
 
 const messagesWithMeta = computed(() => {
     if (!Array.isArray(messages.value)) return [];
@@ -87,6 +91,17 @@ watch(
     },
 );
 
+const handleNewMessage = (msg: any, isFromMe: boolean) => {
+    messages.value.push({
+        ...msg,
+        isFromMe: isFromMe,
+    });
+
+    if (!isUserAtBottom.value) {
+        newMessagesCount.value++;
+    }
+};
+
 useEcho(`chat.${props.chat.id}`, '.message.sent', (e: any) => {
     if (!e.message) return;
     const isFromMe = e.message.user.id === myUserId;
@@ -94,10 +109,8 @@ useEcho(`chat.${props.chat.id}`, '.message.sent', (e: any) => {
 
     const messageExists = messages.value.some((msg) => msg.id === e.message.id);
     if (!messageExists) {
-        messages.value.push({
-            ...e.message,
-            isFromMe: isFromMe,
-        });
+        handleNewMessage(e.message, isFromMe);
+
         markAsReadDebounced();
     }
 });
@@ -143,9 +156,7 @@ const send = () => {
             reply_for_message_id: replyState.message?.id ?? null,
         })
         .then((response) => {
-            messages.value.push({
-                ...response.data.data,
-            });
+            handleNewMessage(response.data.data, true);
         });
 
     replyState.message = null;
@@ -178,7 +189,7 @@ const fetchAndScrollToMessage = async (messageId: number) => {
 
         await nextTick();
         messagesListRef.value?.scrollToMessage(messageId);
-    } catch (error) {
+    } catch (e) {
         mainPopupState.show('Failed to load message context.', 'error');
     } finally {
         isLoadingMore.value = false;
@@ -205,7 +216,7 @@ const loadMoreMessages = async () => {
         if (res.data.data.length < 50) {
             hasMoreMessages.value = false;
         }
-    } catch (error) {
+    } catch (e) {
         mainPopupState.show('Failed to load more messages.', 'error');
     } finally {
         isLoadingMore.value = false;
@@ -225,6 +236,18 @@ const markAsReadDebounced = debounce(() => {
 
     markAsRead()
 }, 3000)
+
+const onScrollStatusChange = (isAtBottom: boolean) => {
+    isUserAtBottom.value = isAtBottom;
+    if (isAtBottom) {
+        newMessagesCount.value = 0;
+    }
+};
+
+const scrollToBottom = () => {
+    messagesListRef.value?.scrollToBottomSmooth();
+    newMessagesCount.value = 0;
+};
 </script>
 
 <template>
@@ -234,15 +257,43 @@ const markAsReadDebounced = debounce(() => {
         <div class="flex h-screen flex-col">
             <ChatNavBar :chat="props.chat" />
 
-            <MessagesList
-                ref="messagesListRef"
-                :messages="messagesWithMeta"
-                :chatType="props.chat.type"
-                :has-more-messages="hasMoreMessages"
-                :is-loading-more="isLoadingMore"
-                @load-more="loadMoreMessages"
-                @fetch-and-scroll="fetchAndScrollToMessage"
-            />
+            <div class="relative flex-1 min-h-0 flex flex-col">
+                <MessagesList
+                    ref="messagesListRef"
+                    :messages="messagesWithMeta"
+                    :chatType="props.chat.type"
+                    :has-more-messages="hasMoreMessages"
+                    :is-loading-more="isLoadingMore"
+                    @load-more="loadMoreMessages"
+                    @fetch-and-scroll="fetchAndScrollToMessage"
+                    @scroll-status="onScrollStatusChange"
+                />
+
+                <!-- Scroll to Bottom Button -->
+                <transition
+                    enter-active-class="transition ease-out duration-200"
+                    enter-from-class="opacity-0 translate-y-2"
+                    enter-to-class="opacity-100 translate-y-0"
+                    leave-active-class="transition ease-in duration-150"
+                    leave-from-class="opacity-100 translate-y-0"
+                    leave-to-class="opacity-0 translate-y-2"
+                >
+                    <button
+                        v-if="!isUserAtBottom"
+                        @click="scrollToBottom"
+                        class="absolute bottom-4 right-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-md transition hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700"
+                    >
+                        <ArrowDown class="h-5 w-5 text-gray-600 dark:text-gray-300" />
+
+                        <span
+                            v-if="newMessagesCount > 0"
+                            class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-green-500 text-xs font-bold text-white shadow-sm"
+                        >
+                            {{ newMessagesCount > 99 ? '99+' : newMessagesCount }}
+                        </span>
+                    </button>
+                </transition>
+            </div>
 
             <div class="border-t border-gray-300 bg-gray-100 p-3 dark:border-gray-700 dark:bg-gray-900">
                 <ReplyPreview />

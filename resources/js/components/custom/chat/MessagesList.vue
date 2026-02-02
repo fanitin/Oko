@@ -11,7 +11,7 @@ const props = defineProps<{
     isLoadingMore: boolean;
 }>();
 
-const emit = defineEmits(['load-more', 'fetch-and-scroll']);
+const emit = defineEmits(['load-more', 'fetch-and-scroll', 'scroll-status']);
 
 const containerRef = ref<HTMLElement | null>(null);
 
@@ -26,9 +26,15 @@ const scrollToBottom = async (behavior: 'smooth' | 'auto' = 'smooth') => {
 };
 
 const handleScroll = () => {
-    if (containerRef.value && containerRef.value.scrollTop === 0 && props.hasMoreMessages && !props.isLoadingMore) {
+    const el = containerRef.value;
+    if (!el) return;
+
+    if (el.scrollTop === 0 && props.hasMoreMessages && !props.isLoadingMore) {
         emit('load-more');
     }
+
+    const isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 100;
+    emit('scroll-status', isAtBottom);
 };
 
 onMounted(() => {
@@ -103,9 +109,13 @@ const scrollToMessage = async (messageId: number) => {
     }
 };
 
+const scrollToBottomSmooth = () => scrollToBottom('smooth');
+
+
 defineExpose({
     scrollToMessage,
     setMessageRef,
+    scrollToBottomSmooth,
 });
 </script>
 
