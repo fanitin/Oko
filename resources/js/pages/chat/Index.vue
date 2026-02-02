@@ -15,6 +15,8 @@ import axios from 'axios';
 import { computed, nextTick, onMounted, onBeforeUnmount, ref, watch } from 'vue';
 import { debounce } from 'lodash-es'
 import { ArrowDown } from 'lucide-vue-next';
+import EditPreview from '@/components/custom/chat/EditPreview.vue';
+import { editState } from '@/lib/custom/states/editState';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -91,6 +93,18 @@ watch(
     },
 );
 
+watch(
+    () => editState.message,
+    (newMessage) => {
+        if (newMessage) {
+            message.value = newMessage.body;
+            inputRef.value?.focus();
+        } else {
+            message.value = '';
+        }
+    },
+);
+
 const handleNewMessage = (msg: any, isFromMe: boolean) => {
     messages.value.push({
         ...msg,
@@ -150,6 +164,25 @@ const handleEmojiSelect = (emoji: string) => {
 const send = () => {
     if (!message.value.trim()) return;
 
+    if(editState.message) {
+        axios
+            .put(route('chat.messages.update', {chat: props.chat.id, message: editState.message.id}), {
+                body: message.value,
+            })
+            .then((response) => {
+                const index = messages.value.findIndex(msg => msg.id === response.data.data.id);
+                if(index !== -1) {
+                    messages.value[index] = {
+                        ...response.data.data,
+                        isFromMe: true,
+                    };
+                }
+            });
+        //TODO BACKEND FOR THIS + TESTS
+        editState.message = null;
+        message.value = '';
+        return;
+    }
     axios
         .post(route('chat.messages.store', props.chat.id), {
             body: message.value,
@@ -269,7 +302,6 @@ const scrollToBottom = () => {
                     @scroll-status="onScrollStatusChange"
                 />
 
-                <!-- Scroll to Bottom Button -->
                 <transition
                     enter-active-class="transition ease-out duration-200"
                     enter-from-class="opacity-0 translate-y-2"
@@ -287,7 +319,7 @@ const scrollToBottom = () => {
 
                         <span
                             v-if="newMessagesCount > 0"
-                            class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-green-500 text-xs font-bold text-white shadow-sm"
+                            class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-green-500 dark:bg-purple-700 text-xs font-bold text-white shadow-sm"
                         >
                             {{ newMessagesCount > 99 ? '99+' : newMessagesCount }}
                         </span>
@@ -297,6 +329,7 @@ const scrollToBottom = () => {
 
             <div class="border-t border-gray-300 bg-gray-100 p-3 dark:border-gray-700 dark:bg-gray-900">
                 <ReplyPreview />
+                <EditPreview />
                 <form @submit.prevent="send" class="flex items-center gap-3">
                     <Emoji @select="handleEmojiSelect" />
 
