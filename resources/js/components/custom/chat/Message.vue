@@ -55,19 +55,20 @@ const scrollToReply = (id: number) => {
                 if (observer) observer.disconnect();
             }
         },
-        { threshold: 0.5 }
+        { threshold: 0.5 },
     );
 
     observer.observe(el);
 };
 
 defineExpose({
-    scrollToReply
-})
+    scrollToReply,
+});
 
 onUnmounted(() => {
     if (observer) observer.disconnect();
 });
+
 function formatTime(dateStr: string) {
     const date = new Date(dateStr);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -96,8 +97,8 @@ function openMenu(e: MouseEvent) {
         body: props.message.body,
         isFromMe: props.message.isFromMe,
         user: {
-            username: props.message.user.username
-        }
+            username: props.message.user.username,
+        },
     };
 }
 </script>
@@ -144,7 +145,9 @@ function openMenu(e: MouseEvent) {
                     {{ message.user.username }}
                 </div>
 
-                <div class="pr-3 pb-2 text-base leading-relaxed">{{ message.body }}</div>
+                <div class="pr-3 pb-1 text-base leading-relaxed">
+                    {{ message.body }}
+                </div>
 
                 <div class="flex flex-col space-y-1 text-xs" :class="message.isFromMe ? 'items-end' : 'items-start'">
                     <div class="flex items-center gap-1.5" :class="message.isFromMe ? 'text-gray-200' : 'text-gray-500 dark:text-gray-400'">

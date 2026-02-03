@@ -32,6 +32,10 @@ useEcho(`user.${user.value.id}`, '.message.deleted', (e: any) => {
 useEcho(`user.${user.value.id}`, '.message.markAsRead', (e: any) => {
     sidebarState.updateSeenStatus(e, user.value.id)
 })
+
+useEcho(`user.${user.value.id}`, '.message.edited', (e: any) => {
+    sidebarState.editedMessage(e.sidebar)
+})
 </script>
 
 <template>

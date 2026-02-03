@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Chat;
 
 use App\Events\Messages\MessageDeleted;
+use App\Events\Messages\MessageEdited;
 use App\Events\Messages\MessageMarkAsRead;
 use App\Events\Messages\MessageSent;
 use App\Http\Controllers\Controller;
@@ -13,7 +14,6 @@ use App\Models\Message;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class MessageController extends Controller
 {
@@ -147,5 +147,28 @@ class MessageController extends Controller
 
         broadcast(new MessageMarkAsRead($chat->id, $user->id, $chatUsers))->toOthers();
         return response()->noContent();
+    }
+
+    public function update(Chat $chat, Message $message, Request $request)
+    {
+        try {
+            $this->authorize('update', $message);
+        } catch (AuthorizationException $e) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $validated = $request->validate([
+            'body' => 'required|string',
+        ]);
+
+        $message->body = $validated['body'];
+        $message->edited_at = now();
+        $message->save();
+
+        $message->load('user.mainAvatar', 'media', 'replyTo.user', 'chat.users');
+
+        broadcast(new MessageEdited($message))->toOthers();
+
+        return new MessageResource($message);
     }
 }

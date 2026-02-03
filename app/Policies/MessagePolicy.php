@@ -37,7 +37,7 @@ class MessagePolicy
      */
     public function update(User $user, Message $message): bool
     {
-        return false;
+        return $message->user_id === $user->id;
     }
 
     /**

@@ -51,5 +51,14 @@ export const sidebarState = reactive({
         if (!chat || !chat.lastMessage) return;
 
         chat.lastMessage.status = 'seen';
-    }
+    },
+
+    editedMessage(sidebar: any){
+        const chat = this.chats.find(c => c.id === sidebar.chatId)
+        if (!chat) return;
+
+        if(sidebar.lastMessage){
+            chat.lastMessage = sidebar.lastMessage;
+        }
+    },
 })

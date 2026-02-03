@@ -119,7 +119,7 @@ const handleNewMessage = (msg: any, isFromMe: boolean) => {
 useEcho(`chat.${props.chat.id}`, '.message.sent', (e: any) => {
     if (!e.message) return;
     const isFromMe = e.message.user.id === myUserId;
-    if (e.message.user.id === myUserId) return;
+    if (isFromMe) return;
 
     const messageExists = messages.value.some((msg) => msg.id === e.message.id);
     if (!messageExists) {
@@ -146,6 +146,19 @@ useEcho(`chat.${props.chat.id}`, '.message.markAsRead', (e: any) => {
     })
 });
 
+useEcho(`chat.${props.chat.id}`, '.message.edited', (e: any) => {
+    if (!e.message) return;
+    if(e.message.chat_id != props.chat.id) return;
+
+    const index = messages.value.findIndex(msg => msg.id === e.message.id);
+    if(index !== -1) {
+        messages.value[index] = {
+            ...e.message,
+            isFromMe: e.message.user.id === myUserId,
+        };
+    }
+});
+
 const handleEmojiSelect = (emoji: string) => {
     const input = inputRef.value;
     if (!input) return;
@@ -166,7 +179,7 @@ const send = () => {
 
     if(editState.message) {
         axios
-            .put(route('chat.messages.update', {chat: props.chat.id, message: editState.message.id}), {
+            .post(route('chat.messages.update', {chat: props.chat.id, message: editState.message.id}), {
                 body: message.value,
             })
             .then((response) => {
@@ -178,7 +191,7 @@ const send = () => {
                     };
                 }
             });
-        //TODO BACKEND FOR THIS + TESTS
+
         editState.message = null;
         message.value = '';
         return;
