@@ -16,3 +16,9 @@ Broadcast::channel('chat.{chatId}', function ($user, $chatId) {
         ->whereHas('users', fn ($q) => $q->where('users.id', $user->id))
         ->exists();
 });
+
+Broadcast::channel('online', function ($user) {
+    return [
+        'id' => $user->id,
+    ];
+});

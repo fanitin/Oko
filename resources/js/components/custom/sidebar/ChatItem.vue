@@ -4,6 +4,7 @@ import { computed } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import { Check, CheckCheck } from 'lucide-vue-next';
 import { format, isToday, isThisWeek } from 'date-fns';
+import { sidebarState } from '@/lib/custom/states/sidebarState';
 
 const { state } = useSidebar();
 
@@ -21,6 +22,7 @@ const props = defineProps<{
         } | null
         avatar?: string
         unreadCount?: number
+        friendUserId?: number
     };
 }>();
 
@@ -61,6 +63,11 @@ const lastMessageTime = computed(() => {
 const isFromMe = computed(() => {
     return safeChat.value.lastMessage?.user_id === page.props.auth.user.id;
 });
+
+const isOnline = computed(() => {
+    if(!props.chat.friendUserId) return false;
+    return sidebarState.onlineUsers.includes(props.chat.friendUserId) && props.chat.friendUserId !== page.props.auth.user.id;
+});
 </script>
 
 <template>
@@ -70,18 +77,25 @@ const isFromMe = computed(() => {
                 'flex cursor-pointer items-center rounded-xl transition hover:bg-gray-200 dark:hover:bg-gray-800 gap-2 p-1',
             ]"
         >
-            <img
-                v-if="safeChat.avatar"
-                :src="safeChat.avatar"
-                alt="avatar"
-                class="rounded-full border-2 border-gray-300 object-cover transition-all duration-300 dark:border-gray-700 h-10 w-10"
-            />
-            <div
-                v-else
-                class="flex items-center justify-center rounded-full bg-gray-300 transition-all duration-300 dark:bg-gray-600 h-10 w-10"
-            >
-                <span class="font-bold text-gray-600 dark:text-gray-300">{{ firstLetter }}</span>
+            <div class="relative">
+                <img
+                    v-if="safeChat.avatar"
+                    :src="safeChat.avatar"
+                    alt="avatar"
+                    class="rounded-full border-2 border-gray-300 object-cover transition-all duration-300 dark:border-gray-700 h-10 w-10"
+                />
+                <div
+                    v-else
+                    class="flex items-center justify-center rounded-full bg-gray-300 transition-all duration-300 dark:bg-gray-600 h-10 w-10"
+                >
+                    <span class="font-bold text-gray-600 dark:text-gray-300">{{ firstLetter }}</span>
+                </div>
+                <span
+                    v-if="isOnline"
+                    class="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-white dark:border-gray-900"
+                />
             </div>
+
 
             <div
                 class="flex-1 overflow-hidden transition-all duration-300"
@@ -100,7 +114,7 @@ const isFromMe = computed(() => {
                     </span>
                 </div>
                 <div class="flex items-center justify-between">
-                    <p class="truncate text-sm text-gray-700 dark:text-gray-400">
+                    <p class="truncate text-xs text-gray-700 dark:text-gray-400">
                         {{ safeChat.lastMessage?.body }}
                     </p>
                     <div class="flex items-center gap-1 ml-2 min-w-[70px] justify-end">

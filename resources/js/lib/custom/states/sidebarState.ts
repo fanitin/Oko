@@ -3,6 +3,7 @@ import { reactive } from 'vue'
 export const sidebarState = reactive({
     activeChatId: 0,
     chats: [] as any[],
+    onlineUsers: [] as number[],
 
     updateFromMessage(sidebar: any, myUserId: number) {
         const chat = this.chats.find(c => c.id === sidebar.chatId)
@@ -60,5 +61,19 @@ export const sidebarState = reactive({
         if(sidebar.lastMessage){
             chat.lastMessage = sidebar.lastMessage;
         }
+    },
+
+    setOnlineUsers(users: number[]) {
+        this.onlineUsers = users
+    },
+
+    addOnlineUser(id: number) {
+        if (!this.onlineUsers.includes(id)) {
+            this.onlineUsers.push(id)
+        }
+    },
+
+    removeOnlineUser(id: number) {
+        this.onlineUsers = this.onlineUsers.filter(u => u !== id)
     },
 })

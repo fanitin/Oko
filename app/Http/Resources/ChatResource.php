@@ -19,6 +19,7 @@ class ChatResource extends JsonResource
                 'title'  => $this->resolveTitle($type, $authId),
                 'avatar' => $this->resolveAvatar($type, $authId),
                 'link'   => $this->resolveHeaderLink($type, $authId),
+                'friendUserId' => $this->resolveFriendUserId($type, $authId),
             ],
 
             'participants' => $this->users->map(fn ($user) => [
@@ -26,6 +27,15 @@ class ChatResource extends JsonResource
                 'username' => $user->username,
             ])->values(),
         ];
+    }
+
+    protected function resolveFriendUserId(string $type, int $authId): ?int
+    {
+        if ($type !== 'private') {
+            return null;
+        }
+
+        return $this->users->firstWhere('id', '!=', $authId)?->id;
     }
 
     protected function resolveType(): string

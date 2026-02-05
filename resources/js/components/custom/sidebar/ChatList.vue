@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { sidebarState } from '@/lib/custom/states/sidebarState';
 import ChatItem from './ChatItem.vue'
 import { usePage } from '@inertiajs/vue3'
-import { useEcho } from '@laravel/echo-vue';
+import { useEcho, useEchoPresence } from '@laravel/echo-vue';
 
 const page = usePage()
 const user = ref(page.props.auth.user);
@@ -20,6 +20,32 @@ const chats = computed(() => sidebarState.chats)
 const selectChat = (chatId: number) => {
     sidebarState.activeChatId = chatId
 }
+
+const {
+    channel,
+    leave,
+} = useEchoPresence('online')
+
+onMounted(() => {
+    const presence = channel()
+
+    presence.here((users: any[]) => {
+        sidebarState.setOnlineUsers(users.map(u => u.id))
+        console.log('ONLINE:', users)
+    })
+
+    presence.joining((user: any) => {
+        sidebarState.addOnlineUser(user.id)
+    })
+
+    presence.leaving((user: any) => {
+        sidebarState.removeOnlineUser(user.id)
+    })
+})
+
+onUnmounted(() => {
+    leave()
+})
 
 useEcho(`user.${user.value.id}`, '.message.sent', (e: any) => {
     sidebarState.updateFromMessage(e.sidebar, user.value.id)

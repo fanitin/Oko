@@ -35,7 +35,18 @@ class ChatListService
             'avatar' => $this->resolveAvatar($chat, $userId),
             'lastMessage' => $this->resolveMessage($chat->lastMessage),
             'unreadCount' => $this->resolveUnreadCount($chat, $userId),
+            'friendUserId' => $this->resolveFriendUserId($chat, $userId),
         ];
+    }
+
+    protected function resolveFriendUserId(Chat $chat, int $userId): ?int
+    {
+        if ($this->resolveType($chat) !== 'private') {
+            return null;
+        }
+
+        $friendChatUser = $chat->chatUsers->firstWhere('user_id', '!=', $userId);
+        return $friendChatUser ? $friendChatUser->user_id : null;
     }
 
     protected function resolveMessage($message){
