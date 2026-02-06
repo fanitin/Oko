@@ -8,6 +8,7 @@ use App\Http\Resources\UserResource;
 use App\Models\Chat;
 use App\Models\User;
 use App\Services\Chat\ChatService;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class ChatController extends Controller
@@ -39,6 +40,54 @@ class ChatController extends Controller
                     'chatAvatars',
                 ])
             ))->resolve(),
+        ]);
+    }
+
+    public function togglePin(Chat $chat)
+    {
+        try {
+            $user = auth()->user();
+            $userChat = $chat->chatUsers()->where('user_id', $user->id)->firstOrFail();
+            DB::beginTransaction();
+
+            $userChat->update([
+                'is_pinned' => !$userChat->is_pinned,
+            ]);
+
+            DB::commit();
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            return response()->json([
+                'status' => 'error',
+            ]);
+        }
+
+        return response()->json([
+            'status' => 'success',
+        ]);
+    }
+
+    public function toggleMute(Chat $chat)
+    {
+        try {
+            $user = auth()->user();
+            $userChat = $chat->chatUsers()->where('user_id', $user->id)->firstOrFail();
+            DB::beginTransaction();
+
+            $userChat->update([
+                'is_muted' => !$userChat->is_muted,
+            ]);
+
+            DB::commit();
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            return response()->json([
+                'status' => 'error',
+            ]);
+        }
+
+        return response()->json([
+            'status' => 'success',
         ]);
     }
 }

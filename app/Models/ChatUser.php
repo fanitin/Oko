@@ -11,6 +11,8 @@ class ChatUser extends Model
         'user_id',
         'role',
         'last_read_message_id',
+        'is_muted',
+        'is_pinned',
     ];
 
     public function chat(){

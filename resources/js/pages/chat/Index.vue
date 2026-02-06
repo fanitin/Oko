@@ -17,6 +17,7 @@ import { debounce } from 'lodash-es'
 import { ArrowDown } from 'lucide-vue-next';
 import EditPreview from '@/components/custom/chat/EditPreview.vue';
 import { editState } from '@/lib/custom/states/editState';
+import ChatContextMenu from '@/components/custom/chat/ChatContextMenu.vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -366,4 +367,5 @@ const scrollToBottom = () => {
     </AppLayout>
 
     <MessageContextMenu />
+    <ChatContextMenu />
 </template>

@@ -14,6 +14,10 @@ class ChatResource extends JsonResource
         return [
             'id' => $this->id,
             'type' => $type, // self | private | group
+            'settings' => [
+                'isMuted' => $this->is_muted,
+                'isPinned' => $this->is_pinned,
+            ],
 
             'header' => [
                 'title'  => $this->resolveTitle($type, $authId),
