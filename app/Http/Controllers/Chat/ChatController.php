@@ -4,10 +4,9 @@ namespace App\Http\Controllers\Chat;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ChatResource;
-use App\Http\Resources\UserResource;
 use App\Models\Chat;
-use App\Models\User;
 use App\Services\Chat\ChatService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
@@ -20,18 +19,33 @@ class ChatController extends Controller
         $this->chatService = $chatService;
     }
 
-    public function show(?Chat $chat)
+    public function show(?Chat $chat, Request $request)
     {
-        $authId = auth()->id();
+        if($chat?->id && !$chat->users->contains(auth()->id())) {
+            return redirect()->route('home');
+        }
 
-        $participantsIds = $chat
-            ? $chat->users->pluck('id')->toArray()
-            : [$authId];
+        if(!$chat?->id) {
+            $authId = auth()->id();
+            $userId = $request->query('user');
 
-        $chat = $this->chatService->getOrCreateById(
-            $chat?->id,
-            $participantsIds
-        );
+            if ($chat?->id) {
+                $participantsIds = $chat->users->pluck('id')->toArray();
+            } elseif ($userId && $userId != $authId) {
+                $participantsIds = [$authId, (int)$userId];
+            } else {
+                $participantsIds = [$authId];
+            }
+
+            $chat = $this->chatService->getOrCreateById(
+                $chat?->id,
+                $participantsIds
+            );
+
+            if (!$request->route('chat') || $request->route('chat')?->id !== $chat->id) {
+                return redirect()->route('chat.show', ['chat' => $chat->id]);
+            }
+        }
 
         return Inertia::render('chat/Index', [
             'chat' => (new ChatResource(

@@ -14,8 +14,14 @@ use Inertia\Inertia;
 class SelfProfileController extends Controller
 {
     public function index(){
-        $user = new UserResource(auth()->user()->load('mainAvatar', 'avatars'));
-        return Inertia::render('profile/self/Index', ['user' => $user->resolve()]);
+        $user = auth()->user()->load('mainAvatar', 'avatars');
+        $userRes = new UserResource($user);
+        $chatID = $user->chats()
+            ->whereHas('users', function ($query) {
+                $query->where('user_id', auth()->id());
+            })
+            ->first()?->id;
+        return Inertia::render('profile/self/Index', ['user' => $userRes->resolve(), 'chatID' => $chatID]);
     }
 
     public function uploadAvatar(Request $request)

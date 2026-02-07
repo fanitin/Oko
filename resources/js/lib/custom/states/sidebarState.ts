@@ -34,6 +34,7 @@ export const sidebarState = reactive({
         if(this.activeChatId !== chat.id) {
             chat.unreadCount = chat.unreadCount > 0 ? ((chat.unreadCount ?? 0) - sidebar.unreadCountDecrement) : 0;
         }
+        sortChats(this.chats)
     },
 
     resetUnreadCount(chatId: number) {
@@ -92,11 +93,11 @@ function sortChats(chats: any[]) {
 
         const aTime = a.lastMessage?.created_at
             ? new Date(a.lastMessage.created_at).getTime()
-            : 0
+            : new Date(a.createdAt || 0).getTime()
 
         const bTime = b.lastMessage?.created_at
             ? new Date(b.lastMessage.created_at).getTime()
-            : 0
+            : new Date(b.createdAt || 0).getTime()
 
         return bTime - aTime
     })

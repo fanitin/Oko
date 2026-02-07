@@ -18,7 +18,7 @@ import { ArrowDown } from 'lucide-vue-next';
 import EditPreview from '@/components/custom/chat/EditPreview.vue';
 import { editState } from '@/lib/custom/states/editState';
 import ChatContextMenu from '@/components/custom/chat/ChatContextMenu.vue';
-import { chatContextMenu } from '@/lib/custom/chatContextMenu';
+import { MessageCircle, Sparkles } from 'lucide-vue-next';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -306,6 +306,7 @@ const scrollToBottom = () => {
             <ChatNavBar :chat="props.chat" />
             <div class="relative flex-1 min-h-0 flex flex-col">
                 <MessagesList
+                    v-if="messages.length > 0"
                     ref="messagesListRef"
                     :messages="messagesWithMeta"
                     :chatType="props.chat.type"
@@ -315,6 +316,32 @@ const scrollToBottom = () => {
                     @fetch-and-scroll="fetchAndScrollToMessage"
                     @scroll-status="onScrollStatusChange"
                 />
+
+                <div
+                    v-else
+                    class="flex-1 flex items-center justify-center p-4"
+                >
+                    <div class="max-w-md w-full bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 text-center border border-gray-200 dark:border-gray-700">
+                        <div class="mb-4 flex justify-center">
+                            <div class="rounded-full bg-blue-100 dark:bg-purple-900/30 p-4">
+                                <MessageCircle class="h-12 w-12 text-blue-600 dark:text-purple-500" />
+                            </div>
+                        </div>
+
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                            No messages yet
+                        </h3>
+
+                        <p class="text-gray-600 dark:text-gray-400 mb-6">
+                            Start a conversation by sending a message below
+                        </p>
+
+                        <div class="flex items-center justify-center gap-2 text-sm text-gray-500 dark:text-gray-500">
+                            <Sparkles class="h-4 w-4" />
+                            <span>Be the first to say hello!</span>
+                        </div>
+                    </div>
+                </div>
 
                 <transition
                     enter-active-class="transition ease-out duration-200"

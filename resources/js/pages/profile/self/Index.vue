@@ -5,7 +5,7 @@ import UsernameProfileComponent from '@/components/custom/profile/UsernameProfil
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
-import { Settings } from 'lucide-vue-next';
+import { Bookmark, Settings } from 'lucide-vue-next';
 import { ref } from 'vue';
 import { mainPopupState } from '@/lib/custom/states/mainPopupState';
 
@@ -29,6 +29,7 @@ const props = defineProps<{
         email: string;
         avatars?: Avatar[];
     };
+    chatID?: number;
 }>();
 
 const avatars = ref<Avatar[]>(props.user.avatars ?? []);
@@ -83,6 +84,14 @@ function handleUsernameChange(payload: { type: string; message: string }) {
                     >
                         <Settings class="h-5 w-5 text-gray-600 dark:text-gray-300 transition-transform duration-300 group-hover:rotate-45" />
                         <span class="font-semibold text-gray-800 dark:text-gray-200">Settings</span>
+                    </Link>
+
+                    <Link
+                        :href="route('chat.show', { chat: props.chatID, user: props.user.id })"
+                        class="group flex items-center justify-center gap-3 rounded-2xl bg-blue-500 dark:bg-blue-600 px-4 py-3 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 hover:bg-blue-600 dark:hover:bg-blue-700"
+                    >
+                        <Bookmark class="h-5 w-5 text-white" />
+                        <span class="font-semibold text-white">Saved messages</span>
                     </Link>
 
                     <Link

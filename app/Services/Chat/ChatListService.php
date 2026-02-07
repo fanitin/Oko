@@ -20,6 +20,7 @@ class ChatListService
             ->groupBy('chats.id', 'chat_users.is_pinned')
             ->orderByDesc('chat_users.is_pinned')
             ->orderByRaw('MAX(messages.created_at) DESC')
+            ->orderByDesc('chats.created_at')
             ->with([
                 'lastMessage.chat.users',
                 'chatUsers.user.mainAvatar',
@@ -43,6 +44,7 @@ class ChatListService
             'lastMessage' => $this->resolveMessage($chat->lastMessage),
             'unreadCount' => $this->resolveUnreadCount($chat, $userId),
             'friendUserId' => $this->resolveFriendUserId($chat, $userId),
+            'createdAt' => $chat->created_at->toDateTimeString(),
         ];
     }
 

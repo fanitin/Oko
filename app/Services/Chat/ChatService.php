@@ -18,27 +18,7 @@ class ChatService
             return Chat::with([
                 'users.mainAvatar',
                 'chatAvatars',
-                'messages',
             ])->findOrFail($chatId);
-        }
-
-        if (count($participantsIds) === 2) {
-            $chat = Chat::query()
-                ->where('is_group', false)
-                ->whereHas('users', fn($q) => $q->whereIn('users.id', $participantsIds)
-                )
-                ->withCount('users')
-                ->having('users_count', 2)
-                ->with([
-                    'users.mainAvatar',
-                    'chatAvatars',
-                    'messages',
-                ])
-                ->first();
-
-            if ($chat) {
-                return $chat;
-            }
         }
 
         $isSelf = count($participantsIds) === 1 && in_array($authId, $participantsIds);
