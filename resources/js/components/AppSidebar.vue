@@ -5,12 +5,13 @@ import AppLogoSidebar from '@/components/custom/sidebar/AppLogoSidebar.vue';
 import SidebarHeaderSearch from '@/components/custom/sidebar/SidebarHeaderSearch.vue';
 import UserCard from '@/components/custom/sidebar/UserCard.vue';
 import { usePage } from '@inertiajs/vue3'
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { useSidebar } from '@/components/ui/sidebar/utils'
 
 const page = usePage()
 const user = ref(page.props.auth.user);
-const { state } = useSidebar()
+const { state, setOpen } = useSidebar()
+const isMobile = ref(false);
 
 watch(
     () => page.props.auth.user,
@@ -19,7 +20,29 @@ watch(
     }
 );
 
+const checkMobile = () => {
+    const wasMobile = isMobile.value;
+    isMobile.value = window.innerWidth < 1024;
 
+    if (isMobile.value && !wasMobile) {
+        setOpen(true);
+    }
+};
+
+onMounted(() => {
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+});
+
+onUnmounted(() => {
+    window.removeEventListener('resize', checkMobile);
+});
+
+watch(isMobile, (newValue) => {
+    if (newValue) {
+        setOpen(true);
+    }
+});
 </script>
 
 <template>
@@ -45,5 +68,4 @@ watch(
 
         <SidebarFooter></SidebarFooter>
     </Sidebar>
-    <slot />
 </template>
