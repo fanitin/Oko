@@ -79,6 +79,7 @@ onMounted(() => {
     fetchMessages();
     sidebarState.activeChatId = props.chat.id;
     markAsRead();
+    sidebarState.checkIfChatAddedToSidebar(props.chat.id, props.chat.header.title, props.chat.header.avatar, props.chat.type);
 });
 
 onBeforeUnmount(() => {

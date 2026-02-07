@@ -71,10 +71,21 @@ useEcho(`user.${user.value.id}`, '.message.edited', (e: any) => {
             @click="selectChat(chat.id)"
         />
     </div>
-    <div v-else class="flex h-full flex-col items-center justify-center p-4 text-center">
-        <MessageSquare :size="64" class="mb-4 text-gray-400" />
-        <p class="text-sm text-gray-500 dark:text-gray-400">There are no chats yet</p>
-        <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">Start a new conversation to see it here</p>
+    <div v-else class="flex h-full flex-col items-center justify-center p-6">
+        <div class="relative mb-6">
+            <div class="absolute inset-0 animate-pulse rounded-full bg-purple-500/10 dark:bg-purple-500/5 blur-3xl"></div>
+            <div class="relative rounded-full bg-gradient-to-br from-purple-500 via-violet-500 to-fuchsia-500 p-5 shadow-xl">
+                <MessageSquare class="h-14 w-14 text-white" stroke-width="1.5" />
+            </div>
+        </div>
+
+        <h3 class="mb-2 text-lg font-semibold text-gray-900 dark:text-gray-100">
+            No chats yet
+        </h3>
+
+        <p class="max-w-xs text-center text-sm text-gray-600 dark:text-gray-400">
+            Start a new conversation and it will appear here
+        </p>
     </div>
 </template>
 

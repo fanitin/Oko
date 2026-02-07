@@ -1,33 +1,32 @@
 <script setup lang="ts">
 import { useSidebar } from '@/components/ui/sidebar';
-import { computed } from 'vue';
-import { Link, usePage } from '@inertiajs/vue3';
-import { Check, CheckCheck } from 'lucide-vue-next';
-import { format, isToday, isThisWeek } from 'date-fns';
 import { sidebarState } from '@/lib/custom/states/sidebarState';
-import { Pin, BellOff } from 'lucide-vue-next';
-
+import { Link, usePage } from '@inertiajs/vue3';
+import { format, isThisWeek, isToday } from 'date-fns';
+import { BellOff, Bookmark, Check, CheckCheck, Pin } from 'lucide-vue-next';
+import { computed } from 'vue';
 
 const { state } = useSidebar();
 const props = defineProps<{
     chat: {
-        id: number
-        name?: string
+        id: number;
+        name?: string;
         lastMessage?: {
-            id: number
-            user_id: number
-            chat_id: number
-            body: string | null
-            status: 'delivered' | 'seen'
-            created_at?: string
-        } | null
-        avatar?: string
-        unreadCount?: number
-        friendUserId?: number
+            id: number;
+            user_id: number;
+            chat_id: number;
+            body: string | null;
+            status: 'delivered' | 'seen';
+            created_at?: string;
+        } | null;
+        avatar?: string;
+        unreadCount?: number;
+        friendUserId?: number;
         settings: {
-            isPinned: boolean
-            isMuted: boolean
-        }
+            isPinned: boolean;
+            isMuted: boolean;
+        };
+        type: string;
     };
 }>();
 
@@ -52,6 +51,7 @@ const safeChat = computed(() => ({
     },
     avatar: props.chat.avatar ?? null,
     unreadCount: (props.chat.unreadCount && props.chat.unreadCount > 99 ? '99+' : props.chat.unreadCount) ?? 0,
+    type: props.chat.type ?? 'private',
 }));
 
 const firstLetter = computed(() => (safeChat.value.name ? safeChat.value.name.charAt(0) : '?'));
@@ -74,34 +74,35 @@ const isFromMe = computed(() => {
 });
 
 const isOnline = computed(() => {
-    if(!props.chat.friendUserId) return false;
+    if (!props.chat.friendUserId) return false;
     return sidebarState.onlineUsers.includes(props.chat.friendUserId) && props.chat.friendUserId !== page.props.auth.user.id;
 });
+
+const isSelfChat = computed(() => safeChat.value.type === 'self');
 </script>
 
 <template>
     <Link :href="route('chat.show', safeChat.id)">
-        <div
-            :class="[
-                'flex cursor-pointer items-center rounded-xl transition hover:bg-gray-200 dark:hover:bg-gray-800 gap-2 p-1',
-            ]"
-        >
+        <div :class="['flex cursor-pointer items-center gap-2 rounded-xl p-1 transition hover:bg-gray-200 dark:hover:bg-gray-800']">
             <div class="relative">
+                <div
+                    v-if="isSelfChat"
+                    class="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-500 dark:from-purple-600 dark:to-fuchsia-600"
+                >
+                    <Bookmark class="h-5 w-5 text-white" fill="white" />
+                </div>
                 <img
-                    v-if="safeChat.avatar"
+                    v-else-if="safeChat.avatar"
                     :src="safeChat.avatar"
                     alt="avatar"
-                    class="rounded-full border-2 border-gray-300 object-cover transition-all duration-300 dark:border-gray-700 h-10 w-10"
+                    class="h-10 w-10 rounded-full border-2 border-gray-300 object-cover transition-all duration-300 dark:border-gray-700"
                 />
-                <div
-                    v-else
-                    class="flex items-center justify-center rounded-full bg-gray-300 transition-all duration-300 dark:bg-gray-600 h-10 w-10"
-                >
+                <div v-else class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-300 transition-all duration-300 dark:bg-gray-600">
                     <span class="font-bold text-gray-600 dark:text-gray-300">{{ firstLetter }}</span>
                 </div>
                 <span
-                    v-if="isOnline"
-                    class="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-white dark:border-gray-900"
+                    v-if="isOnline && !isSelfChat"
+                    class="absolute right-0 bottom-0 h-3 w-3 rounded-full border-2 border-white bg-green-500 dark:border-gray-900"
                 />
             </div>
 
@@ -113,37 +114,28 @@ const isOnline = computed(() => {
                 }"
             >
                 <div class="flex items-center justify-between gap-2">
-                    <span class="truncate font-medium text-gray-900 dark:text-gray-100 flex-1">{{ safeChat.name }}</span>
+                    <span class="flex-1 truncate font-medium text-gray-900 dark:text-gray-100">{{ safeChat.name }}</span>
                     <div class="flex items-center gap-1">
-                        <div
-                            v-if="safeChat.settings.isPinned"
-                            class="rounded-full bg-blue-500 p-0.5"
-                        >
+                        <div v-if="safeChat.settings.isPinned" class="rounded-full bg-blue-500 p-0.5">
                             <Pin class="h-2.5 w-2.5 text-white" />
                         </div>
-                        <div
-                            v-if="safeChat.settings.isMuted"
-                            class="rounded-full bg-gray-500 p-0.5"
-                        >
+                        <div v-if="safeChat.settings.isMuted" class="rounded-full bg-gray-500 p-0.5">
                             <BellOff class="h-2.5 w-2.5 text-white" />
                         </div>
                         <span
                             v-if="safeChat.unreadCount"
-                            :class="[
-                                'rounded-full px-2 py-0.5 text-xs text-white',
-                                safeChat.settings.isMuted ? 'bg-gray-400' : 'bg-blue-500'
-                            ]"
+                            :class="['rounded-full px-2 py-0.5 text-xs text-white', safeChat.settings.isMuted ? 'bg-gray-400' : 'bg-blue-500']"
                         >
                             {{ safeChat.unreadCount }}
                         </span>
                     </div>
                 </div>
 
-                <div class="flex items-center justify-between mt-2">
-                    <p class="truncate text-xs text-gray-700 dark:text-gray-400 flex-1">
+                <div class="mt-2 flex items-center justify-between">
+                    <p class="flex-1 truncate text-xs text-gray-700 dark:text-gray-400">
                         {{ safeChat.lastMessage?.body }}
                     </p>
-                    <div class="flex items-center gap-1 ml-2 min-w-[70px] justify-end">
+                    <div class="ml-2 flex min-w-[70px] items-center justify-end gap-1">
                         <span v-if="isFromMe">
                             <CheckCheck v-if="safeChat.lastMessage?.status === 'seen'" class="h-4 w-4 text-cyan-300" />
                             <Check v-else-if="safeChat.lastMessage?.status === 'delivered'" class="h-4 w-4" />
@@ -157,13 +149,3 @@ const isOnline = computed(() => {
         </div>
     </Link>
 </template>
-
-
-<style scoped>
-.flex-1 {
-    transition: max-width 0.3s ease, opacity 0.3s ease;
-}
-.min-w-\[70px\] {
-    min-width: 70px;
-}
-</style>
