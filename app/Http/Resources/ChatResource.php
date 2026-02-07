@@ -14,11 +14,7 @@ class ChatResource extends JsonResource
         return [
             'id' => $this->id,
             'type' => $type, // self | private | group
-            'settings' => [
-                'isMuted' => $this->is_muted,
-                'isPinned' => $this->is_pinned,
-            ],
-
+            'settings' => $this->resolveSettings(),
             'header' => [
                 'title'  => $this->resolveTitle($type, $authId),
                 'avatar' => $this->resolveAvatar($type, $authId),
@@ -30,6 +26,14 @@ class ChatResource extends JsonResource
                 'id' => $user->id,
                 'username' => $user->username,
             ])->values(),
+        ];
+    }
+
+    protected function resolveSettings(): array
+    {
+        return [
+            'isPinned' => $this->chatUsers->firstWhere('user_id', auth()->id())?->is_pinned ?? false,
+            'isMuted' => $this->chatUsers->firstWhere('user_id', auth()->id())?->is_muted ?? false,
         ];
     }
 

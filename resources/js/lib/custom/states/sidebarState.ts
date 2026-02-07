@@ -15,10 +15,7 @@ export const sidebarState = reactive({
             chat.unreadCount = (chat.unreadCount ?? 0) + sidebar.unreadCountIncrement
         }
 
-        this.chats = [
-            chat,
-            ...this.chats.filter(c => c.id !== chat.id),
-        ]
+        sortChats(this.chats)
     },
 
     markAsRead(chatId: number) {
@@ -64,16 +61,43 @@ export const sidebarState = reactive({
     },
 
     setOnlineUsers(users: number[]) {
-        this.onlineUsers = users
+        this.onlineUsers = [...users]
     },
 
     addOnlineUser(id: number) {
         if (!this.onlineUsers.includes(id)) {
-            this.onlineUsers.push(id)
+            this.onlineUsers = [...this.onlineUsers, id]
         }
     },
 
     removeOnlineUser(id: number) {
         this.onlineUsers = this.onlineUsers.filter(u => u !== id)
     },
+
+    togglePin(chatId: number) {
+        this.chats.find(c => c.id === chatId).settings.isPinned = !this.chats.find(c => c.id === chatId).settings.isPinned
+        sortChats(this.chats)
+    },
+
+    toggleMute(chatId: number) {
+        this.chats.find(c => c.id === chatId).settings.isMuted = !this.chats.find(c => c.id === chatId).settings.isMuted
+    },
 })
+
+function sortChats(chats: any[]) {
+    chats.sort((a, b) => {
+        if (a.settings.isPinned !== b.settings.isPinned) {
+            return a.settings.isPinned ? -1 : 1
+        }
+
+        const aTime = a.lastMessage?.created_at
+            ? new Date(a.lastMessage.created_at).getTime()
+            : 0
+
+        const bTime = b.lastMessage?.created_at
+            ? new Date(b.lastMessage.created_at).getTime()
+            : 0
+
+        return bTime - aTime
+    })
+}

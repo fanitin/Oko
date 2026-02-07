@@ -12,15 +12,21 @@ class ChatListService
     {
         $userId = Auth::id();
 
-        $chats = Chat::with([
-            'lastMessage.chat.users',
-            'chatUsers.user.mainAvatar',
-            'chatAvatars',
-            'messages:id,chat_id',
-        ])
-            ->whereHas('chatUsers', fn ($q) => $q->where('user_id', $userId))
-            ->get()
-            ->sortByDesc(fn ($chat) => $chat->lastMessage?->created_at);
+        $chats = Chat::query()
+            ->select('chats.*')
+            ->join('chat_users', 'chat_users.chat_id', '=', 'chats.id')
+            ->leftJoin('messages', 'messages.chat_id', '=', 'chats.id')
+            ->where('chat_users.user_id', $userId)
+            ->groupBy('chats.id', 'chat_users.is_pinned')
+            ->orderByDesc('chat_users.is_pinned')
+            ->orderByRaw('MAX(messages.created_at) DESC')
+            ->with([
+                'lastMessage.chat.users',
+                'chatUsers.user.mainAvatar',
+                'chatAvatars',
+                'messages:id,chat_id',
+            ])
+            ->get();
 
         return $chats->map(fn ($chat) => $this->mapChat($chat, $userId))
             ->values();
@@ -30,12 +36,23 @@ class ChatListService
     {
         return [
             'id' => $chat->id,
+            'settings' => $this->resolveSettings($chat, $userId),
             'type' => $this->resolveType($chat),
             'name' => $this->resolveName($chat, $userId),
             'avatar' => $this->resolveAvatar($chat, $userId),
             'lastMessage' => $this->resolveMessage($chat->lastMessage),
             'unreadCount' => $this->resolveUnreadCount($chat, $userId),
             'friendUserId' => $this->resolveFriendUserId($chat, $userId),
+        ];
+    }
+
+    protected function resolveSettings(Chat $chat, int $userId): array
+    {
+        $chatUser = $chat->chatUsers->firstWhere('user_id', $userId);
+
+        return [
+            'isPinned' => $chatUser && $chatUser->is_pinned,
+            'isMuted' => $chatUser && $chatUser->is_muted,
         ];
     }
 

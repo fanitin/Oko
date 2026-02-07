@@ -18,6 +18,7 @@ import { ArrowDown } from 'lucide-vue-next';
 import EditPreview from '@/components/custom/chat/EditPreview.vue';
 import { editState } from '@/lib/custom/states/editState';
 import ChatContextMenu from '@/components/custom/chat/ChatContextMenu.vue';
+import { chatContextMenu } from '@/lib/custom/chatContextMenu';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -236,7 +237,7 @@ const fetchAndScrollToMessage = async (messageId: number) => {
 
         await nextTick();
         messagesListRef.value?.scrollToMessage(messageId);
-    } catch (e) {
+    } catch {
         mainPopupState.show('Failed to load message context.', 'error');
     } finally {
         isLoadingMore.value = false;
@@ -263,7 +264,7 @@ const loadMoreMessages = async () => {
         if (res.data.data.length < 50) {
             hasMoreMessages.value = false;
         }
-    } catch (e) {
+    } catch {
         mainPopupState.show('Failed to load more messages.', 'error');
     } finally {
         isLoadingMore.value = false;
@@ -303,7 +304,6 @@ const scrollToBottom = () => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-screen flex-col">
             <ChatNavBar :chat="props.chat" />
-
             <div class="relative flex-1 min-h-0 flex flex-col">
                 <MessagesList
                     ref="messagesListRef"

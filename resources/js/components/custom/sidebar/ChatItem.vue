@@ -5,9 +5,10 @@ import { Link, usePage } from '@inertiajs/vue3';
 import { Check, CheckCheck } from 'lucide-vue-next';
 import { format, isToday, isThisWeek } from 'date-fns';
 import { sidebarState } from '@/lib/custom/states/sidebarState';
+import { Pin, BellOff } from 'lucide-vue-next';
+
 
 const { state } = useSidebar();
-
 const props = defineProps<{
     chat: {
         id: number
@@ -23,6 +24,10 @@ const props = defineProps<{
         avatar?: string
         unreadCount?: number
         friendUserId?: number
+        settings: {
+            isPinned: boolean
+            isMuted: boolean
+        }
     };
 }>();
 
@@ -40,6 +45,10 @@ const safeChat = computed(() => ({
         body: props.chat.lastMessage?.body ?? 'No messages yet',
         created_at: props.chat.lastMessage?.created_at ?? null,
         status: props.chat.lastMessage?.status,
+    },
+    settings: {
+        isPinned: props.chat.settings?.isPinned ?? false,
+        isMuted: props.chat.settings?.isMuted ?? false,
     },
     avatar: props.chat.avatar ?? null,
     unreadCount: (props.chat.unreadCount && props.chat.unreadCount > 99 ? '99+' : props.chat.unreadCount) ?? 0,
@@ -96,7 +105,6 @@ const isOnline = computed(() => {
                 />
             </div>
 
-
             <div
                 class="flex-1 overflow-hidden transition-all duration-300"
                 :class="{
@@ -104,17 +112,35 @@ const isOnline = computed(() => {
                     'max-w-full opacity-100': !isCollapsed,
                 }"
             >
-                <div class="flex items-center justify-between">
-                    <span class="truncate font-medium text-gray-900 dark:text-gray-100">{{ safeChat.name }}</span>
-                    <span
-                        v-if="safeChat.unreadCount"
-                        class="rounded-full bg-blue-500 px-2 py-0.5 text-xs text-white"
-                    >
-                        {{ safeChat.unreadCount }}
-                    </span>
+                <div class="flex items-center justify-between gap-2">
+                    <span class="truncate font-medium text-gray-900 dark:text-gray-100 flex-1">{{ safeChat.name }}</span>
+                    <div class="flex items-center gap-1">
+                        <div
+                            v-if="safeChat.settings.isPinned"
+                            class="rounded-full bg-blue-500 p-0.5"
+                        >
+                            <Pin class="h-2.5 w-2.5 text-white" />
+                        </div>
+                        <div
+                            v-if="safeChat.settings.isMuted"
+                            class="rounded-full bg-gray-500 p-0.5"
+                        >
+                            <BellOff class="h-2.5 w-2.5 text-white" />
+                        </div>
+                        <span
+                            v-if="safeChat.unreadCount"
+                            :class="[
+                                'rounded-full px-2 py-0.5 text-xs text-white',
+                                safeChat.settings.isMuted ? 'bg-gray-400' : 'bg-blue-500'
+                            ]"
+                        >
+                            {{ safeChat.unreadCount }}
+                        </span>
+                    </div>
                 </div>
-                <div class="flex items-center justify-between">
-                    <p class="truncate text-xs text-gray-700 dark:text-gray-400">
+
+                <div class="flex items-center justify-between mt-2">
+                    <p class="truncate text-xs text-gray-700 dark:text-gray-400 flex-1">
                         {{ safeChat.lastMessage?.body }}
                     </p>
                     <div class="flex items-center gap-1 ml-2 min-w-[70px] justify-end">
@@ -131,6 +157,7 @@ const isOnline = computed(() => {
         </div>
     </Link>
 </template>
+
 
 <style scoped>
 .flex-1 {

@@ -31,7 +31,6 @@ onMounted(() => {
 
     presence.here((users: any[]) => {
         sidebarState.setOnlineUsers(users.map(u => u.id))
-        console.log('ONLINE:', users)
     })
 
     presence.joining((user: any) => {

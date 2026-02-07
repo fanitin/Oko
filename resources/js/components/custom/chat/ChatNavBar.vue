@@ -68,8 +68,8 @@ function onMenuClick(e: MouseEvent) {
     chatContextMenu.chat = {
         id: props.chat.id,
         type: props.chat.type,
-        isPinned: props.chat.settings.isPinned,
-        isMuted: props.chat.settings.isMuted,
+        isPinned: chatContextMenu.chat?.isPinned || props.chat.settings.isPinned,
+        isMuted: chatContextMenu.chat?.isMuted || props.chat.settings.isMuted,
     };
 }
 </script>

@@ -8,7 +8,7 @@ export const chatContextMenu = reactive({
     chat: null as null | {
         id: number
         type: string
-        isPinned?: boolean
-        isMuted?: boolean
+        isPinned: boolean
+        isMuted: boolean
     },
 })
