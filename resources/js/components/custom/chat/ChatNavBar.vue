@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { MoreVertical, Search } from 'lucide-vue-next';
+import { MoreVertical, Search, Bookmark } from 'lucide-vue-next';
 import { computed } from 'vue';
 import { sidebarState } from '@/lib/custom/states/sidebarState';
 import { chatContextMenu } from '@/lib/custom/chatContextMenu';
@@ -38,6 +38,8 @@ const isOnline = computed(() => {
     return sidebarState.onlineUsers.includes(props.chat.header.friendUserId);
 });
 
+const isSelfChat = computed(() => props.chat.type === 'self');
+
 function onSearchClick() {
     console.log('Search clicked');
 }
@@ -73,18 +75,24 @@ function onMenuClick(e: MouseEvent) {
     };
 }
 </script>
+
 <template>
     <div class="flex items-center justify-between border-b border-gray-200 p-2 dark:border-gray-700">
         <Link :href="route(safeHeader.link.route, safeHeader.link.params)">
             <div class="flex cursor-pointer items-center gap-2">
                 <div class="relative">
+                    <div
+                        v-if="isSelfChat"
+                        class="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-500 dark:from-purple-600 dark:to-fuchsia-600"
+                    >
+                        <Bookmark class="h-5 w-5 text-white" fill="white" />
+                    </div>
                     <img
-                        v-if="safeHeader.avatar"
+                        v-else-if="safeHeader.avatar"
                         :src="safeHeader.avatar"
                         alt="avatar"
                         class="h-10 w-10 rounded-full border-2 border-gray-300 object-cover dark:border-gray-700"
                     />
-
                     <div v-else class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-300 dark:bg-gray-600">
                         <span class="font-bold text-gray-700 dark:text-gray-200">
                             {{ firstLetter }}
@@ -92,7 +100,7 @@ function onMenuClick(e: MouseEvent) {
                     </div>
 
                     <span
-                        v-if="isOnline"
+                        v-if="isOnline && !isSelfChat"
                         class="absolute right-0 bottom-0 h-3 w-3 rounded-full border-2 border-white bg-green-500 dark:border-gray-900"
                     />
                 </div>
