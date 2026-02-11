@@ -30,6 +30,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('', [ChatController::class, 'show'])->name('show');
             Route::get('/toggle-pin', [ChatController::class, 'togglePin'])->name('toggle-pin');
             Route::get('/toggle-mute', [ChatController::class, 'toggleMute'])->name('toggle-mute');
+            Route::delete('/delete', [ChatController::class, 'delete'])->name('delete');
         });
 
         Route::prefix('/{chat}')->name('messages.')->group(function () {

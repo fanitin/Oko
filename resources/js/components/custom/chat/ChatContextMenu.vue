@@ -1,9 +1,15 @@
 <script setup lang="ts">
+import Dialog from '@/components/custom/Dialog.vue';
 import { chatContextMenu } from '@/lib/custom/chatContextMenu';
+import { mainPopupState } from '@/lib/custom/states/mainPopupState';
 import { sidebarState } from '@/lib/custom/states/sidebarState';
+import { router } from '@inertiajs/vue3';
 import axios from 'axios';
-import { BellOff, Pin, PinOff, Bell, Trash2 } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { Bell, BellOff, Pin, PinOff, Trash2 } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
+
+const showDeleteDialog = ref(false);
+const isDeleting = ref(false);
 
 const pinLabel = computed(() => (chatContextMenu.chat?.isPinned ? 'Unpin chat' : 'Pin chat'));
 
@@ -48,10 +54,37 @@ async function mute() {
     close();
 }
 
-async function remove() {
-    if (!confirm('Delete chat permanently?')) return;
-    console.log('delete chat', chatContextMenu.chat?.id);
+function remove() {
+    if (!chatContextMenu.chat) return;
     close();
+    showDeleteDialog.value = true;
+}
+
+async function confirmDelete() {
+    if (!chatContextMenu.chat) return;
+
+    isDeleting.value = true;
+
+    const chatId = chatContextMenu.chat.id;
+
+    try {
+        await axios.delete(route('chat.delete', { chat: chatId }));
+
+        sidebarState.removeChat(chatId);
+
+        if (sidebarState.activeChatId === chatId) {
+            router.visit(route('home'));
+        }
+
+        showDeleteDialog.value = false;
+        mainPopupState.show('Chat deleted successfully.', 'success');
+    } catch (error: any) {
+        const message = error.response?.data?.message ?? 'Chat has not been deleted.';
+        showDeleteDialog.value = false;
+        mainPopupState.show(message, 'error');
+    } finally {
+        isDeleting.value = false;
+    }
 }
 </script>
 
@@ -69,18 +102,34 @@ async function remove() {
         </button>
 
         <button class="menu-item" @click="mute" v-if="chatContextMenu.chat?.type !== 'self'">
-            <BellOff v-if="!chatContextMenu.chat?.isMuted" class="mr-2 h-4 w-4"/>
+            <BellOff v-if="!chatContextMenu.chat?.isMuted" class="mr-2 h-4 w-4" />
             <Bell v-else class="mr-2 h-4 w-4" />
             {{ muteLabel }}
         </button>
 
         <hr class="my-1 dark:border-gray-700" />
 
-        <button class="menu-item text-red-500 hover:!bg-red-50 dark:hover:!bg-red-900/20" @click="remove">
+        <button
+            class="menu-item text-red-500 hover:!bg-red-50 dark:hover:!bg-red-900/20"
+            @click="remove"
+            v-if="chatContextMenu.chat?.type !== 'self'"
+        >
             <Trash2 class="mr-2 h-4 w-4" />
             Delete chat
         </button>
     </div>
+
+    <Dialog
+        v-model="showDeleteDialog"
+        title="Delete chat?"
+        description="This will permanently delete this chat from your account. This action cannot be undone."
+        confirm-text="Delete"
+        cancel-text="Cancel"
+        variant="danger"
+        :loading="isDeleting"
+        @confirm="confirmDelete"
+        @cancel="showDeleteDialog = false"
+    />
 </template>
 
 <style scoped>

@@ -84,21 +84,16 @@ export const sidebarState = reactive({
         this.chats.find((c) => c.id === chatId).settings.isMuted = !this.chats.find((c) => c.id === chatId).settings.isMuted;
     },
 
-    checkIfChatAddedToSidebar(chatId: number, header: string, avatar: string, type: string) {
-        if (this.chats.some((c) => c.id === chatId)) return;
+    removeChat(chatId: number) {
+        this.chats = this.chats.filter((c) => c.id !== chatId);
+    },
 
-        this.chats.unshift({
-            id: chatId,
-            avatar: avatar,
-            name: header,
-            type: type,
-            settings: {
-                isPinned: false,
-                isMuted: false,
-            },
-            unreadCount: 0,
-        });
-
+    createChat(chat: any){
+        if(this.chats.some((c) => c.id === chat.id)) return;
+        this.chats = [
+            ...this.chats,
+            chat
+        ];
         sortChats(this.chats);
     },
 });

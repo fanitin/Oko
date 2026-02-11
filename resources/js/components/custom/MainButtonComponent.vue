@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, defineEmits } from 'vue'
+import { defineProps, defineEmits, computed } from 'vue'
 
 interface Props {
     type?: 'primary' | 'secondary' | 'danger' | 'success'
@@ -18,7 +18,9 @@ const baseClasses = {
     danger: 'bg-red-500 text-white hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700',
     success: 'bg-green-500 text-white hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700',
 }
-const typeClass = baseClasses[props.type || 'primary']
+const typeClass = computed(() =>
+    baseClasses[props.type || 'primary']
+)
 </script>
 
 <template>

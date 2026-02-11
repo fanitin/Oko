@@ -1,24 +1,23 @@
 <script setup lang="ts">
+import ChatContextMenu from '@/components/custom/chat/ChatContextMenu.vue';
 import ChatNavBar from '@/components/custom/chat/ChatNavBar.vue';
+import EditPreview from '@/components/custom/chat/EditPreview.vue';
 import Emoji from '@/components/custom/chat/Emoji.vue';
 import MessageContextMenu from '@/components/custom/chat/MessageContextMenu.vue';
 import MessagesList from '@/components/custom/chat/MessagesList.vue';
 import ReplyPreview from '@/components/custom/chat/ReplyPreview.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { editState } from '@/lib/custom/states/editState';
 import { mainPopupState } from '@/lib/custom/states/mainPopupState';
 import { replyState } from '@/lib/custom/states/replyState';
 import { sidebarState } from '@/lib/custom/states/sidebarState';
 import { type BreadcrumbItem } from '@/types';
-import { Head, usePage } from '@inertiajs/vue3';
+import { Head, router, usePage } from '@inertiajs/vue3';
 import { useEcho } from '@laravel/echo-vue';
 import axios from 'axios';
-import { computed, nextTick, onMounted, onBeforeUnmount, ref, watch } from 'vue';
-import { debounce } from 'lodash-es'
-import { ArrowDown } from 'lucide-vue-next';
-import EditPreview from '@/components/custom/chat/EditPreview.vue';
-import { editState } from '@/lib/custom/states/editState';
-import ChatContextMenu from '@/components/custom/chat/ChatContextMenu.vue';
-import { MessageCircle, Sparkles } from 'lucide-vue-next';
+import { debounce } from 'lodash-es';
+import { ArrowDown, MessageCircle, Sparkles } from 'lucide-vue-next';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -31,6 +30,10 @@ const props = defineProps<{
     chat: {
         id: number;
         type: 'self' | 'private' | 'group';
+        settings: {
+            isPinned: boolean;
+            isMuted: boolean;
+        };
         header: {
             title: string;
             avatar: string | null;
@@ -58,6 +61,7 @@ const messagesListRef = ref<InstanceType<typeof MessagesList> | null>(null);
 
 const isUserAtBottom = ref(true);
 const newMessagesCount = ref(0);
+const pendingMessages = ref(false);
 
 const messagesWithMeta = computed(() => {
     if (!Array.isArray(messages.value)) return [];
@@ -70,20 +74,19 @@ const messagesWithMeta = computed(() => {
 
 const onFocus = () => {
     if (sidebarState.activeChatId === props.chat.id) {
-        markAsRead()
+        markAsRead();
     }
-}
+};
 
 onMounted(() => {
-    window.addEventListener('focus', onFocus)
+    window.addEventListener('focus', onFocus);
     fetchMessages();
     sidebarState.activeChatId = props.chat.id;
     markAsRead();
-    sidebarState.checkIfChatAddedToSidebar(props.chat.id, props.chat.header.title, props.chat.header.avatar, props.chat.type);
 });
 
 onBeforeUnmount(() => {
-    window.removeEventListener('focus', onFocus)
+    window.removeEventListener('focus', onFocus);
     sidebarState.activeChatId = 0;
 });
 
@@ -140,26 +143,35 @@ useEcho(`chat.${props.chat.id}`, '.message.deleted', (e: any) => {
 
 useEcho(`chat.${props.chat.id}`, '.message.markAsRead', (e: any) => {
     if (!e.chatId) return;
-    if(!e.userId) return;
+    if (!e.userId) return;
 
     messages.value.map((msg) => {
-        if(msg.user.id != e.userId) {
+        if (msg.user.id != e.userId) {
             msg.status = 'seen';
         }
-    })
+    });
 });
 
 useEcho(`chat.${props.chat.id}`, '.message.edited', (e: any) => {
     if (!e.message) return;
-    if(e.message.chat_id != props.chat.id) return;
+    if (e.message.chat_id != props.chat.id) return;
 
-    const index = messages.value.findIndex(msg => msg.id === e.message.id);
-    if(index !== -1) {
+    const index = messages.value.findIndex((msg) => msg.id === e.message.id);
+    if (index !== -1) {
         messages.value[index] = {
             ...e.message,
             isFromMe: e.message.user.id === myUserId,
         };
     }
+});
+
+useEcho(`chat.${props.chat.id}`, '.chat.deleted', (e: any) => {
+    if (!e.chatID) return;
+    if (e.chatID != props.chat.id) return;
+
+    sidebarState.removeChat(e.chatID);
+    router.visit(route('home'));
+    mainPopupState.show('This chat has been deleted.', 'info');
 });
 
 const handleEmojiSelect = (emoji: string) => {
@@ -180,14 +192,14 @@ const handleEmojiSelect = (emoji: string) => {
 const send = () => {
     if (!message.value.trim()) return;
 
-    if(editState.message) {
+    if (editState.message) {
         axios
-            .post(route('chat.messages.update', {chat: props.chat.id, message: editState.message.id}), {
+            .post(route('chat.messages.update', { chat: props.chat.id, message: editState.message.id }), {
                 body: message.value,
             })
             .then((response) => {
-                const index = messages.value.findIndex(msg => msg.id === response.data.data.id);
-                if(index !== -1) {
+                const index = messages.value.findIndex((msg) => msg.id === response.data.data.id);
+                if (index !== -1) {
                     messages.value[index] = {
                         ...response.data.data,
                         isFromMe: true,
@@ -213,9 +225,11 @@ const send = () => {
 };
 
 const fetchMessages = async () => {
+    pendingMessages.value = true;
     const res = await axios.get(route('chat.messages.index', props.chat.id));
     messages.value = res.data.data;
     hasMoreMessages.value = res.data.data.length === 50;
+    pendingMessages.value = false;
 };
 
 const fetchAndScrollToMessage = async (messageId: number) => {
@@ -273,18 +287,17 @@ const loadMoreMessages = async () => {
 };
 
 const markAsRead = () => {
-    axios.post(route('chat.messages.mark-as-read', props.chat.id))
-        .then(() => {
-            sidebarState.resetUnreadCount(props.chat.id);
-        });
+    axios.post(route('chat.messages.mark-as-read', props.chat.id)).then(() => {
+        sidebarState.resetUnreadCount(props.chat.id);
+    });
 };
 
 const markAsReadDebounced = debounce(() => {
-    if (sidebarState.activeChatId !== props.chat.id) return
-    if (!document.hasFocus()) return
+    if (sidebarState.activeChatId !== props.chat.id) return;
+    if (!document.hasFocus()) return;
 
-    markAsRead()
-}, 3000)
+    markAsRead();
+}, 3000);
 
 const onScrollStatusChange = (isAtBottom: boolean) => {
     isUserAtBottom.value = isAtBottom;
@@ -305,9 +318,9 @@ const scrollToBottom = () => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-screen flex-col">
             <ChatNavBar :chat="props.chat" />
-            <div class="relative flex-1 min-h-0 flex flex-col">
+            <div class="relative flex min-h-0 flex-1 flex-col">
                 <MessagesList
-                    v-if="messages.length > 0"
+                    v-if="messages.length > 0 || pendingMessages"
                     ref="messagesListRef"
                     :messages="messagesWithMeta"
                     :chatType="props.chat.type"
@@ -318,24 +331,19 @@ const scrollToBottom = () => {
                     @scroll-status="onScrollStatusChange"
                 />
 
-                <div
-                    v-else
-                    class="flex-1 flex items-center justify-center p-4"
-                >
-                    <div class="max-w-md w-full bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 text-center border border-gray-200 dark:border-gray-700">
+                <div v-else class="flex flex-1 items-center justify-center p-4">
+                    <div
+                        class="w-full max-w-md rounded-xl border border-gray-200 bg-white p-8 text-center shadow-lg dark:border-gray-700 dark:bg-gray-800"
+                    >
                         <div class="mb-4 flex justify-center">
-                            <div class="rounded-full bg-blue-100 dark:bg-purple-900/30 p-4">
+                            <div class="rounded-full bg-blue-100 p-4 dark:bg-purple-900/30">
                                 <MessageCircle class="h-12 w-12 text-blue-600 dark:text-purple-500" />
                             </div>
                         </div>
 
-                        <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                            No messages yet
-                        </h3>
+                        <h3 class="mb-2 text-xl font-semibold text-gray-900 dark:text-gray-100">No messages yet</h3>
 
-                        <p class="text-gray-600 dark:text-gray-400 mb-6">
-                            Start a conversation by sending a message below
-                        </p>
+                        <p class="mb-6 text-gray-600 dark:text-gray-400">Start a conversation by sending a message below</p>
 
                         <div class="flex items-center justify-center gap-2 text-sm text-gray-500 dark:text-gray-500">
                             <Sparkles class="h-4 w-4" />
@@ -355,13 +363,13 @@ const scrollToBottom = () => {
                     <button
                         v-if="!isUserAtBottom"
                         @click="scrollToBottom"
-                        class="absolute bottom-4 right-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-md transition hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700"
+                        class="absolute right-4 bottom-4 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white shadow-md transition hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700"
                     >
                         <ArrowDown class="h-5 w-5 text-gray-600 dark:text-gray-300" />
 
                         <span
                             v-if="newMessagesCount > 0"
-                            class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-green-500 dark:bg-purple-700 text-xs font-bold text-white shadow-sm"
+                            class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-green-500 text-xs font-bold text-white shadow-sm dark:bg-purple-700"
                         >
                             {{ newMessagesCount > 99 ? '99+' : newMessagesCount }}
                         </span>

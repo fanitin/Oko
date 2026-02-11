@@ -22,28 +22,6 @@ const selectChat = (chatId: number) => {
     sidebarState.activeChatId = chatId;
 };
 
-const { channel, leave } = useEchoPresence('online');
-
-onMounted(() => {
-    const presence = channel();
-
-    presence.here((users: any[]) => {
-        sidebarState.setOnlineUsers(users.map((u) => u.id));
-    });
-
-    presence.joining((user: any) => {
-        sidebarState.addOnlineUser(user.id);
-    });
-
-    presence.leaving((user: any) => {
-        sidebarState.removeOnlineUser(user.id);
-    });
-});
-
-onUnmounted(() => {
-    leave();
-});
-
 useEcho(`user.${user.value.id}`, '.message.sent', (e: any) => {
     sidebarState.updateFromMessage(e.sidebar, user.value.id);
 });
@@ -58,6 +36,18 @@ useEcho(`user.${user.value.id}`, '.message.markAsRead', (e: any) => {
 
 useEcho(`user.${user.value.id}`, '.message.edited', (e: any) => {
     sidebarState.editedMessage(e.sidebar);
+});
+
+useEcho(`user.${user.value.id}`, '.chat.deleted', (e: any) => {
+    sidebarState.removeChat(e.chatID);
+});
+
+useEcho(`user.${user.value.id}`, '.chat.created', (e: any) => {
+    const chat = {
+        ...e.chat,
+        unreadCount: 0
+    }
+    sidebarState.createChat(chat);
 });
 </script>
 

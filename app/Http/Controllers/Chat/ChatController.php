@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Chat;
 
+use App\Events\Chat\ChatDeleted;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ChatResource;
 use App\Models\Chat;
@@ -99,6 +100,32 @@ class ChatController extends Controller
                 'status' => 'error',
             ]);
         }
+
+        return response()->json([
+            'status' => 'success',
+        ]);
+    }
+
+    public function delete(Chat $chat)
+    {
+        $user = auth()->user();
+
+        if (!$chat->chatUsers()->where('user_id', $user->id)->exists()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'You are not a participant of this chat',
+            ], 403);
+        }
+
+        $chatID = $chat->id;
+        $chatUsers = $chat->users;
+
+        DB::transaction(function () use ($chat) {
+            $chat->delete();
+        });
+
+        broadcast(new ChatDeleted($chatID, $chatUsers))->toOthers();
+
 
         return response()->json([
             'status' => 'success',

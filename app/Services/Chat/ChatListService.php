@@ -33,6 +33,11 @@ class ChatListService
             ->values();
     }
 
+    public function mapChatForUser(Chat $chat, int $userId): array
+    {
+        return $this->mapChat($chat, $userId);
+    }
+
     protected function mapChat(Chat $chat, int $userId): array
     {
         return [
@@ -44,7 +49,7 @@ class ChatListService
             'lastMessage' => $this->resolveMessage($chat->lastMessage),
             'unreadCount' => $this->resolveUnreadCount($chat, $userId),
             'friendUserId' => $this->resolveFriendUserId($chat, $userId),
-            'createdAt' => $chat->created_at->toDateTimeString(),
+            'createdAt' => $chat->created_at?->toDateTimeString(),
         ];
     }
 
