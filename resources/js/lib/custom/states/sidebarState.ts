@@ -193,20 +193,24 @@ export const sidebarState = reactive({
         const lowerQuery = query.toLowerCase();
 
         this.chats = this.allChats.filter((chat) => {
-            const chatName = chat.isGroup
-                ? chat.name
-                : chat.participants.find((p: any) => p.id !== chat.currentUserId)?.name || 'Unknown';
+            // Получаем имя чата
+            const chatName = chat.name ||
+                (chat.participants?.find((p: any) => p.id !== chat.currentUserId)?.name) ||
+                'Unknown';
 
+            // Поиск по имени чата
             if (chatName.toLowerCase().includes(lowerQuery)) {
                 return true;
             }
 
-            if (chat.isGroup && chat.participants.some((p: any) =>
+            // Поиск по участникам группы
+            if (chat.isGroup && chat.participants?.some((p: any) =>
                 p.name?.toLowerCase().includes(lowerQuery)
             )) {
                 return true;
             }
 
+            // Поиск по последнему сообщению
             return !!chat.lastMessage?.body?.toLowerCase().includes(lowerQuery);
         });
     },

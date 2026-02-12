@@ -47,10 +47,10 @@ watch(isMobile, (newValue) => {
 
 <template>
     <Sidebar collapsible="icon" variant="inset">
-        <SidebarHeader>
+        <SidebarHeader :class="state === 'collapsed' ? 'items-center' : ''">
             <div
                 class="flex w-full flex-col gap-2"
-                :class="state === 'expanded' ? 'flex-row items-center justify-between' : 'flex-col'"
+                :class="state === 'expanded' ? 'flex-row items-center justify-between' : 'flex-col items-center'"
             >
                 <AppLogoSidebar />
                 <SidebarTrigger />
@@ -60,7 +60,7 @@ watch(isMobile, (newValue) => {
             <UserCard :user="user"/>
         </SidebarHeader>
 
-        <div class="my-2 h-px w-full bg-gray-300 dark:bg-gray-700"></div>
+        <div v-if="state === 'expanded'" class="my-2 h-px w-full bg-gray-300 dark:bg-gray-700"></div>
 
         <SidebarContent>
             <ChatList />

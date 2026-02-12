@@ -6,7 +6,7 @@ defineOptions({
 });
 
 interface Props {
-    className?: HTMLAttributes['class'];
+    class?: HTMLAttributes['class'];
 }
 
 defineProps<Props>();
@@ -18,6 +18,6 @@ const imagePath = '/images/logo/oko.png';
     <img
         :src="imagePath"
         alt="Logo"
-        class="h-12 w-12 rounded-md object-contain shadow-md transition-transform duration-500 ease-in-out hover:scale-125 hover:shadow-lg md:h-16 md:w-16 dark:brightness-110"
+        :class="['object-contain', $props.class]"
     />
 </template>

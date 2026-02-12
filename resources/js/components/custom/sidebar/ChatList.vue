@@ -5,6 +5,10 @@ import ChatItem from './ChatItem.vue';
 import { usePage } from '@inertiajs/vue3';
 import { useEcho } from '@laravel/echo-vue';
 import { MessageSquare, SearchX } from 'lucide-vue-next';
+import { useSidebar } from '@/components/ui/sidebar';
+
+const { state } = useSidebar();
+const isCollapsed = computed(() => state.value === 'collapsed');
 
 const page = usePage();
 const user = ref(page.props.auth.user);
@@ -57,7 +61,13 @@ useEcho(`user.${user.value.id}`, '.chat.created', (e: any) => {
         Found {{ chats.length }} chat{{ chats.length !== 1 ? 's' : '' }}
     </div>
 
-    <div v-if="chats.length > 0" class="flex h-full flex-col gap-2 overflow-y-auto p-2">
+    <div
+        v-if="chats.length > 0"
+        :class="[
+            'flex h-full flex-col gap-2 overflow-y-auto p-2',
+            isCollapsed ? 'items-center' : ''
+        ]"
+    >
         <ChatItem
             v-for="chat in chats"
             :key="chat.id"

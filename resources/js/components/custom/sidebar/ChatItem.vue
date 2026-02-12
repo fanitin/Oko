@@ -83,27 +83,43 @@ const isSelfChat = computed(() => safeChat.value.type === 'self');
 
 <template>
     <Link :href="route('chat.show', safeChat.id)">
-        <div :class="['flex cursor-pointer items-center gap-2 rounded-xl p-1 transition hover:bg-gray-200 dark:hover:bg-gray-800']">
-            <div class="relative">
+        <div
+            :class="[
+                'flex cursor-pointer items-center gap-3 rounded-xl p-2 transition hover:bg-gray-200 dark:hover:bg-gray-800',
+                isCollapsed ? 'justify-center' : ''
+            ]"
+        >
+            <div class="relative flex-shrink-0">
                 <div
                     v-if="isSelfChat"
-                    class="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-500 dark:from-purple-600 dark:to-fuchsia-600"
+                    class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-500 dark:from-purple-600 dark:to-fuchsia-600"
                 >
-                    <Bookmark class="h-5 w-5 text-white" fill="white" />
+                    <Bookmark class="h-6 w-6 text-white" fill="white" />
                 </div>
                 <img
                     v-else-if="safeChat.avatar"
                     :src="safeChat.avatar"
                     alt="avatar"
-                    class="h-10 w-10 rounded-full border-2 border-gray-300 object-cover transition-all duration-300 dark:border-gray-700"
+                    class="h-12 w-12 rounded-full border-2 border-gray-300 object-cover transition-all duration-300 dark:border-gray-700"
                 />
-                <div v-else class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-300 transition-all duration-300 dark:bg-gray-600">
-                    <span class="font-bold text-gray-600 dark:text-gray-300">{{ firstLetter }}</span>
+                <div v-else class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-300 transition-all duration-300 dark:bg-gray-600">
+                    <span class="text-lg font-bold text-gray-600 dark:text-gray-300">{{ firstLetter }}</span>
                 </div>
                 <span
                     v-if="isOnline && !isSelfChat"
-                    class="absolute right-0 bottom-0 h-3 w-3 rounded-full border-2 border-white bg-green-500 dark:border-gray-900"
+                    class="absolute right-0 bottom-0 h-3.5 w-3.5 rounded-full border-2 border-white bg-green-500 dark:border-gray-900"
                 />
+
+                <!-- Badge для непрочитанных в collapsed -->
+                <span
+                    v-if="isCollapsed && safeChat.unreadCount"
+                    :class="[
+                        'absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold text-white',
+                        safeChat.settings.isMuted ? 'bg-gray-400' : 'bg-blue-500'
+                    ]"
+                >
+                    {{ typeof safeChat.unreadCount === 'number' && safeChat.unreadCount > 9 ? '9+' : safeChat.unreadCount }}
+                </span>
             </div>
 
             <div
@@ -114,33 +130,33 @@ const isSelfChat = computed(() => safeChat.value.type === 'self');
                 }"
             >
                 <div class="flex items-center justify-between gap-2">
-                    <span class="flex-1 truncate font-medium text-gray-900 dark:text-gray-100">{{ safeChat.name }}</span>
-                    <div class="flex items-center gap-1">
+                    <span class="flex-1 truncate text-base font-semibold text-gray-900 dark:text-gray-100">{{ safeChat.name }}</span>
+                    <div class="flex items-center gap-1.5">
                         <div v-if="safeChat.settings.isPinned" class="rounded-full bg-blue-500 p-0.5">
-                            <Pin class="h-2.5 w-2.5 text-white" />
+                            <Pin class="h-3 w-3 text-white" />
                         </div>
                         <div v-if="safeChat.settings.isMuted" class="rounded-full bg-gray-500 p-0.5">
-                            <BellOff class="h-2.5 w-2.5 text-white" />
+                            <BellOff class="h-3 w-3 text-white" />
                         </div>
                         <span
                             v-if="safeChat.unreadCount"
-                            :class="['rounded-full px-2 py-0.5 text-xs text-white', safeChat.settings.isMuted ? 'bg-gray-400' : 'bg-blue-500']"
+                            :class="['rounded-full px-2 py-0.5 text-xs font-medium text-white', safeChat.settings.isMuted ? 'bg-gray-400' : 'bg-blue-500']"
                         >
                             {{ safeChat.unreadCount }}
                         </span>
                     </div>
                 </div>
 
-                <div class="mt-2 flex items-center justify-between">
-                    <p class="flex-1 truncate text-xs text-gray-700 dark:text-gray-400">
+                <div class="mt-1.5 flex items-center justify-between">
+                    <p class="flex-1 truncate text-sm text-gray-600 dark:text-gray-400">
                         {{ safeChat.lastMessage?.body }}
                     </p>
                     <div class="ml-2 flex min-w-[70px] items-center justify-end gap-1">
                         <span v-if="isFromMe">
-                            <CheckCheck v-if="safeChat.lastMessage?.status === 'seen'" class="h-4 w-4 text-cyan-300" />
-                            <Check v-else-if="safeChat.lastMessage?.status === 'delivered'" class="h-4 w-4" />
+                            <CheckCheck v-if="safeChat.lastMessage?.status === 'seen'" class="h-4 w-4 text-cyan-400" />
+                            <Check v-else-if="safeChat.lastMessage?.status === 'delivered'" class="h-4 w-4 text-gray-400" />
                         </span>
-                        <span class="text-xs text-gray-400">
+                        <span class="text-xs text-gray-500">
                             {{ lastMessageTime }}
                         </span>
                     </div>
