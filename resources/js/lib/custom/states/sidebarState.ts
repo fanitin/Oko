@@ -3,7 +3,10 @@ import { reactive } from 'vue';
 export const sidebarState = reactive({
     activeChatId: 0,
     chats: [] as any[],
+    allChats: [] as any[],
     onlineUsers: [] as number[],
+    searchQuery: '',
+    isSearching: false,
 
     updateFromMessage(sidebar: any, myUserId: number) {
         const chat = this.chats.find((c) => c.id === sidebar.chatId);
@@ -16,11 +19,27 @@ export const sidebarState = reactive({
         }
 
         sortChats(this.chats);
+
+        if (this.isSearching) {
+            const allChat = this.allChats.find((c) => c.id === sidebar.chatId);
+            if (allChat) {
+                allChat.lastMessage = sidebar.lastMessage;
+                if (this.activeChatId !== allChat.id && sidebar.senderId !== myUserId) {
+                    allChat.unreadCount = (allChat.unreadCount ?? 0) + sidebar.unreadCountIncrement;
+                }
+                sortChats(this.allChats);
+            }
+        }
     },
 
     markAsRead(chatId: number) {
         const chat = this.chats.find((c) => c.id === chatId);
         if (chat) chat.unreadCount = 0;
+
+        if (this.isSearching) {
+            const allChat = this.allChats.find((c) => c.id === chatId);
+            if (allChat) allChat.unreadCount = 0;
+        }
     },
 
     deletedMessage(messageId: number, sidebar: any) {
@@ -35,6 +54,17 @@ export const sidebarState = reactive({
             chat.unreadCount = chat.unreadCount > 0 ? (chat.unreadCount ?? 0) - sidebar.unreadCountDecrement : 0;
         }
         sortChats(this.chats);
+
+        if (this.isSearching) {
+            const allChat = this.allChats.find((c) => c.id === sidebar.chatId);
+            if (allChat) {
+                allChat.lastMessage = sidebar.lastMessage;
+                if (this.activeChatId !== allChat.id) {
+                    allChat.unreadCount = allChat.unreadCount > 0 ? (allChat.unreadCount ?? 0) - sidebar.unreadCountDecrement : 0;
+                }
+                sortChats(this.allChats);
+            }
+        }
     },
 
     resetUnreadCount(chatId: number) {
@@ -42,6 +72,11 @@ export const sidebarState = reactive({
         if (!chat) return;
 
         chat.unreadCount = 0;
+
+        if (this.isSearching) {
+            const allChat = this.allChats.find((c) => c.id === chatId);
+            if (allChat) allChat.unreadCount = 0;
+        }
     },
 
     updateSeenStatus(data: any, userId: number) {
@@ -50,6 +85,13 @@ export const sidebarState = reactive({
         if (!chat || !chat.lastMessage) return;
 
         chat.lastMessage.status = 'seen';
+
+        if (this.isSearching) {
+            const allChat = this.allChats.find((c) => c.id === data.chatId);
+            if (allChat && allChat.lastMessage) {
+                allChat.lastMessage.status = 'seen';
+            }
+        }
     },
 
     editedMessage(sidebar: any) {
@@ -58,6 +100,13 @@ export const sidebarState = reactive({
 
         if (sidebar.lastMessage) {
             chat.lastMessage = sidebar.lastMessage;
+        }
+
+        if (this.isSearching) {
+            const allChat = this.allChats.find((c) => c.id === sidebar.chatId);
+            if (allChat && sidebar.lastMessage) {
+                allChat.lastMessage = sidebar.lastMessage;
+            }
         }
     },
 
@@ -76,16 +125,41 @@ export const sidebarState = reactive({
     },
 
     togglePin(chatId: number) {
-        this.chats.find((c) => c.id === chatId).settings.isPinned = !this.chats.find((c) => c.id === chatId).settings.isPinned;
-        sortChats(this.chats);
+        const chat = this.chats.find((c) => c.id === chatId);
+        if (chat) {
+            chat.settings.isPinned = !chat.settings.isPinned;
+            sortChats(this.chats);
+        }
+
+        if (this.isSearching) {
+            const allChat = this.allChats.find((c) => c.id === chatId);
+            if (allChat) {
+                allChat.settings.isPinned = !allChat.settings.isPinned;
+                sortChats(this.allChats);
+            }
+        }
     },
 
     toggleMute(chatId: number) {
-        this.chats.find((c) => c.id === chatId).settings.isMuted = !this.chats.find((c) => c.id === chatId).settings.isMuted;
+        const chat = this.chats.find((c) => c.id === chatId);
+        if (chat) {
+            chat.settings.isMuted = !chat.settings.isMuted;
+        }
+
+        if (this.isSearching) {
+            const allChat = this.allChats.find((c) => c.id === chatId);
+            if (allChat) {
+                allChat.settings.isMuted = !allChat.settings.isMuted;
+            }
+        }
     },
 
     removeChat(chatId: number) {
         this.chats = this.chats.filter((c) => c.id !== chatId);
+
+        if (this.isSearching) {
+            this.allChats = this.allChats.filter((c) => c.id !== chatId);
+        }
     },
 
     createChat(chat: any){
@@ -95,6 +169,55 @@ export const sidebarState = reactive({
             chat
         ];
         sortChats(this.chats);
+
+        if (this.isSearching && !this.allChats.some((c) => c.id === chat.id)) {
+            this.allChats = [...this.allChats, chat];
+            sortChats(this.allChats);
+        }
+    },
+
+    filterChats(query: string) {
+        query = query.trim();
+        this.searchQuery = query;
+
+        if (!query) {
+            this.clearSearch();
+            return;
+        }
+
+        if (!this.isSearching) {
+            this.allChats = [...this.chats];
+            this.isSearching = true;
+        }
+
+        const lowerQuery = query.toLowerCase();
+
+        this.chats = this.allChats.filter((chat) => {
+            const chatName = chat.isGroup
+                ? chat.name
+                : chat.participants.find((p: any) => p.id !== chat.currentUserId)?.name || 'Unknown';
+
+            if (chatName.toLowerCase().includes(lowerQuery)) {
+                return true;
+            }
+
+            if (chat.isGroup && chat.participants.some((p: any) =>
+                p.name?.toLowerCase().includes(lowerQuery)
+            )) {
+                return true;
+            }
+
+            return !!chat.lastMessage?.body?.toLowerCase().includes(lowerQuery);
+        });
+    },
+
+    clearSearch() {
+        if (this.isSearching) {
+            this.chats = [...this.allChats];
+            this.allChats = [];
+        }
+        this.searchQuery = '';
+        this.isSearching = false;
     },
 });
 
