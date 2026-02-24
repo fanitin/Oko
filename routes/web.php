@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
+    Route::get('/users/search', [HomeController::class, 'searchUsers'])->name('users.search');
 
     Route::prefix('/profile')->controller(SelfProfileController::class)->name('profile.')->group(function () {
         Route::get('', 'index')->name('index');

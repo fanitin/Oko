@@ -50,7 +50,6 @@ function handleUsernameChange(payload: { type: string; message: string }) {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="mt-10 flex justify-center mx-6 md:mx-2">
             <div class="flex w-full max-w-5xl flex-col gap-8 md:flex-row">
-                <!-- Left Column -->
                 <div class="flex w-full flex-col items-center space-y-6 md:w-2/3">
                     <div
                         class="w-full rounded-3xl p-4 sm:p-6 bg-white dark:bg-gray-800/50 shadow-lg backdrop-blur-sm transition-all duration-300"

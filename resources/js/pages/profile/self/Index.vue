@@ -88,7 +88,7 @@ function handleUsernameChange(payload: { type: string; message: string }) {
 
                     <Link
                         :href="route('chat.show', { chat: props.chatID, user: props.user.id })"
-                        class="group flex items-center justify-center gap-3 rounded-2xl bg-blue-500 dark:bg-blue-600 px-4 py-3 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 hover:bg-blue-600 dark:hover:bg-blue-700"
+                        class="group flex items-center justify-center gap-3 rounded-2xl bg-blue-500 dark:bg-purple-700 px-4 py-3 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105 hover:bg-blue-600 dark:hover:bg-blue-700"
                     >
                         <Bookmark class="h-5 w-5 text-white" />
                         <span class="font-semibold text-white">Saved messages</span>
