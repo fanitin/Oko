@@ -91,7 +91,7 @@ async function confirmDelete() {
 <template>
     <div
         v-if="chatContextMenu.open"
-        class="fixed z-50 w-48 rounded-lg bg-white py-1 shadow-xl dark:bg-gray-800"
+        class="fixed z-50 w-48 rounded-lg border-2 border-gray-300 bg-white py-1 shadow-xl dark:border-gray-700 dark:bg-gray-800"
         :style="{ top: chatContextMenu.y + 'px', left: chatContextMenu.x + 'px' }"
         v-click-outside="{ handler: close }"
     >

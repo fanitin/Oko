@@ -10,7 +10,7 @@ function cancelEdit() {
 <template>
     <div
         v-if="editState.message"
-        class="mb-2 relative flex items-center gap-3 rounded-t-lg border-b border-gray-300 bg-gray-200/70 p-3 dark:border-gray-700 dark:bg-gray-800/70"
+        class="mb-2 relative flex items-center gap-3 rounded-t-lg border-b-2 border-gray-300 bg-gray-100 p-3 shadow-sm dark:border-gray-700 dark:bg-gray-800/70"
     >
         <Pencil class="h-5 w-5 text-blue-500 dark:text-purple-400" />
 

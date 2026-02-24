@@ -122,7 +122,7 @@ defineExpose({
 <template>
     <div
         ref="containerRef"
-        class="scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent min-h-0 flex-1 space-y-1 overflow-y-auto bg-gray-200 p-4 dark:bg-gray-950"
+        class="scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent min-h-0 flex-1 space-y-1 overflow-y-auto bg-gray-100 p-4 dark:bg-gray-950"
     >
         <div v-if="isLoadingMore" class="flex justify-center py-2">
             <LoaderCircle class="h-6 w-6 animate-spin text-gray-500" />

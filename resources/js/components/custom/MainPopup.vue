@@ -31,7 +31,7 @@ const textColor = computed(() => {
         <div
             v-if="mainPopupState.isVisible"
             :class="[
-        'fixed top-5 right-5 z-50 rounded-lg px-5 py-3 shadow-lg transition-all duration-300 transform hover:scale-105',
+        'fixed top-5 right-5 z-50 rounded-lg border-2 border-white/30 px-5 py-3 shadow-xl transition-all duration-300 transform hover:scale-105',
         bgColor,
         textColor,
       ]"

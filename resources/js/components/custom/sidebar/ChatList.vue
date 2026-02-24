@@ -72,7 +72,7 @@ useEcho(`user.${user.value.id}`, '.chat.created', (e: any) => {
             v-for="chat in chats"
             :key="chat.id"
             :chat="chat"
-            :class="chat.id === sidebarState.activeChatId ? 'rounded-xl bg-gray-200 dark:bg-gray-700' : ''"
+            :class="chat.id === sidebarState.activeChatId ? 'rounded-xl bg-blue-100 border-2 border-blue-300 dark:bg-gray-700 dark:border-gray-600' : ''"
             @click="selectChat(chat.id)"
         />
     </div>

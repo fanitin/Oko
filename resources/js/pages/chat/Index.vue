@@ -333,7 +333,7 @@ const scrollToBottom = () => {
 
                 <div v-else class="flex flex-1 items-center justify-center p-4">
                     <div
-                        class="w-full max-w-md rounded-xl border border-gray-200 bg-white p-8 text-center shadow-lg dark:border-gray-700 dark:bg-gray-800"
+                        class="w-full max-w-md rounded-xl border-2 border-gray-300 bg-white p-8 text-center shadow-md dark:border-gray-700 dark:bg-gray-800"
                     >
                         <div class="mb-4 flex justify-center">
                             <div class="rounded-full bg-blue-100 p-4 dark:bg-purple-900/30">
@@ -363,7 +363,7 @@ const scrollToBottom = () => {
                     <button
                         v-if="!isUserAtBottom"
                         @click="scrollToBottom"
-                        class="absolute right-4 bottom-4 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white shadow-md transition hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700"
+                        class="absolute right-4 bottom-4 z-10 flex h-10 w-10 items-center justify-center rounded-full border-2 border-gray-300 bg-white shadow-lg transition hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700"
                     >
                         <ArrowDown class="h-5 w-5 text-gray-600 dark:text-gray-300" />
 
@@ -377,7 +377,7 @@ const scrollToBottom = () => {
                 </transition>
             </div>
 
-            <div class="border-t border-gray-300 bg-gray-100 p-3 dark:border-gray-700 dark:bg-gray-900">
+            <div class="border-t-2 border-gray-300 bg-gray-50 p-3 shadow-sm dark:border-gray-700 dark:bg-gray-900">
                 <ReplyPreview />
                 <EditPreview />
                 <form @submit.prevent="send" class="flex items-center gap-3">

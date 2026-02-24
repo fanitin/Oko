@@ -26,7 +26,7 @@ const firstLetter = computed(() => displayName.value.charAt(0).toUpperCase());
     <Link :href="route('profile.index')">
         <div
             :class="[
-                'flex cursor-pointer items-center rounded-xl transition hover:bg-gray-200 dark:hover:bg-gray-800 gap-3 p-2',
+                'flex cursor-pointer items-center rounded-xl transition border border-transparent hover:border-gray-300 hover:bg-gray-100 dark:hover:border-gray-700 dark:hover:bg-gray-800 gap-3 p-2',
                 isCollapsed ? 'justify-center' : ''
             ]"
         >
@@ -34,7 +34,7 @@ const firstLetter = computed(() => displayName.value.charAt(0).toUpperCase());
                 v-if="user.main_avatar"
                 :src="user.main_avatar.path"
                 alt="avatar"
-                class="h-12 w-12 flex-shrink-0 rounded-full border-2 border-gray-300 object-cover transition-all duration-300 dark:border-gray-700"
+                class="h-12 w-12 flex-shrink-0 rounded-full border-2 border-gray-300 object-cover shadow-sm transition-all duration-300 dark:border-gray-700"
             />
             <div
                 v-else

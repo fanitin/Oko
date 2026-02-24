@@ -49,7 +49,7 @@ function remove() {
 <template>
     <div
         v-if="messageContextMenu.open"
-        class="fixed z-50 bg-white dark:bg-gray-800 shadow-xl rounded-lg py-1 w-48"
+        class="fixed z-50 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-700 shadow-xl rounded-lg py-1 w-48"
         :style="{ top: messageContextMenu.y + 'px', left: messageContextMenu.x + 'px' }"
         v-click-outside="{ handler: close }"
     >

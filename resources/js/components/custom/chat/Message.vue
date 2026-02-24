@@ -122,11 +122,11 @@ function openMenu(e: MouseEvent) {
             </div>
 
             <div
-                class="relative max-w-[60%] rounded-2xl px-4 py-2.5 break-words shadow-lg"
+                class="relative max-w-[60%] rounded-2xl px-4 py-2.5 break-words shadow-md"
                 :class="[
                     message.isFromMe
                         ? 'rounded-br-lg bg-gradient-to-br from-blue-500 to-blue-400 text-white dark:from-purple-700 dark:to-purple-600'
-                        : 'rounded-bl-lg bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100',
+                        : 'rounded-bl-lg bg-white text-gray-900 border border-gray-200 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700',
                 ]"
                 @contextmenu.prevent="openMenu($event)"
             >

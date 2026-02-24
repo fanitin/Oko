@@ -54,7 +54,7 @@ watch(searchQuery, (newQuery) => {
                 v-model="searchQuery"
                 type="text"
                 placeholder="Search chats..."
-                class="w-full rounded-lg border border-gray-300 bg-gray-100 py-2.5 pl-4 pr-10 text-sm text-gray-900 placeholder-gray-500 transition focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-400 dark:focus:border-purple-400 dark:focus:ring-purple-900"
+                class="w-full rounded-lg border-2 border-gray-300 bg-white py-2.5 pl-4 pr-10 text-sm text-gray-900 placeholder-gray-500 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-400 dark:focus:border-purple-400 dark:focus:ring-purple-900"
             />
 
             <!-- Loading spinner -->

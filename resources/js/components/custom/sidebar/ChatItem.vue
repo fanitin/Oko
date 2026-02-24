@@ -85,7 +85,7 @@ const isSelfChat = computed(() => safeChat.value.type === 'self');
     <Link :href="route('chat.show', safeChat.id)">
         <div
             :class="[
-                'flex cursor-pointer items-center gap-3 rounded-xl p-2 transition hover:bg-gray-200 dark:hover:bg-gray-800',
+                'flex cursor-pointer items-center gap-3 rounded-xl p-2 transition border border-transparent hover:border-gray-300 hover:bg-gray-100 dark:hover:border-gray-700 dark:hover:bg-gray-800',
                 isCollapsed ? 'justify-center' : ''
             ]"
         >
@@ -100,17 +100,16 @@ const isSelfChat = computed(() => safeChat.value.type === 'self');
                     v-else-if="safeChat.avatar"
                     :src="safeChat.avatar"
                     alt="avatar"
-                    class="h-12 w-12 rounded-full border-2 border-gray-300 object-cover transition-all duration-300 dark:border-gray-700"
+                    class="h-12 w-12 rounded-full border-2 border-gray-300 object-cover shadow-sm transition-all duration-300 dark:border-gray-700"
                 />
-                <div v-else class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-300 transition-all duration-300 dark:bg-gray-600">
-                    <span class="text-lg font-bold text-gray-600 dark:text-gray-300">{{ firstLetter }}</span>
+                <div v-else class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-200 border-2 border-gray-300 shadow-sm transition-all duration-300 dark:bg-gray-600 dark:border-gray-700">
+                    <span class="text-lg font-bold text-gray-700 dark:text-gray-300">{{ firstLetter }}</span>
                 </div>
                 <span
                     v-if="isOnline && !isSelfChat"
                     class="absolute right-0 bottom-0 h-3.5 w-3.5 rounded-full border-2 border-white bg-green-500 dark:border-gray-900"
                 />
 
-                <!-- Badge для непрочитанных в collapsed -->
                 <span
                     v-if="isCollapsed && safeChat.unreadCount"
                     :class="[

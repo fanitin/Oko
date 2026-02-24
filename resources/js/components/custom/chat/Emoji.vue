@@ -91,7 +91,7 @@ function selectEmoji(emoji: string) {
         <button
             type="button"
             @click="toggle"
-            class="rounded-lg bg-gray-200 px-2 py-1 transition hover:bg-gray-300 dark:bg-gray-900 dark:hover:bg-gray-800"
+            class="rounded-lg border border-gray-300 bg-gray-100 px-2 py-1 transition hover:bg-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:hover:bg-gray-800"
         >
             <Smile />
         </button>
@@ -100,7 +100,7 @@ function selectEmoji(emoji: string) {
             <div
                 v-if="show"
                 ref="pickerRef"
-                class="emoji-scroll absolute bottom-full left-0 z-50 mb-2 flex max-h-60 w-64 flex-wrap gap-1 overflow-y-auto rounded-lg border border-gray-300 bg-gray-100 p-2 shadow-lg dark:border-gray-700 dark:bg-gray-900"
+                class="emoji-scroll absolute bottom-full left-0 z-50 mb-2 flex max-h-60 w-64 flex-wrap gap-1 overflow-y-auto rounded-lg border-2 border-gray-300 bg-white p-2 shadow-xl dark:border-gray-700 dark:bg-gray-900"
                 v-click-outside="{ handler: close, ignore: buttonRef }"
             >
                 <span

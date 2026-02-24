@@ -60,7 +60,7 @@ watch(isMobile, (newValue) => {
             <UserCard :user="user"/>
         </SidebarHeader>
 
-        <div v-if="state === 'expanded'" class="my-2 h-px w-full bg-gray-300 dark:bg-gray-700"></div>
+        <div v-if="state === 'expanded'" class="my-2 h-px w-full bg-gray-300 shadow-sm dark:bg-gray-700"></div>
 
         <SidebarContent>
             <ChatList />
