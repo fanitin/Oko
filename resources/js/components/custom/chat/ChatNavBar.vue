@@ -93,10 +93,8 @@ function onMenuClick(e: MouseEvent) {
                         alt="avatar"
                         class="h-10 w-10 rounded-full border-2 border-gray-300 object-cover shadow-sm dark:border-gray-700"
                     />
-                    <div v-else class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 border-2 border-gray-300 shadow-sm dark:bg-gray-600 dark:border-gray-700">
-                        <span class="font-bold text-gray-700 dark:text-gray-200">
-                            {{ firstLetter }}
-                        </span>
+                    <div v-else class="flex h-10 w-10 items-center justify-center rounded-full   shadow-sm bg-purple-100 text-purple-700 dark:bg-purple-800/50 dark:text-purple-300">
+                        {{ firstLetter }}
                     </div>
 
                     <span
