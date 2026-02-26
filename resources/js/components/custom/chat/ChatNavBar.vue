@@ -40,10 +40,6 @@ const isOnline = computed(() => {
 
 const isSelfChat = computed(() => props.chat.type === 'self');
 
-function onSearchClick() {
-    console.log('Search clicked');
-}
-
 function onMenuClick(e: MouseEvent) {
     if(chatContextMenu.open){
         chatContextMenu.open = false;
@@ -110,10 +106,6 @@ function onMenuClick(e: MouseEvent) {
         </Link>
 
         <div class="flex items-center gap-3">
-            <button @click="onSearchClick" class="rounded-md p-2 transition hover:bg-gray-200 dark:hover:bg-gray-700">
-                <Search class="h-5 w-5 text-gray-700 dark:text-gray-300" />
-            </button>
-
             <button @click.stop="onMenuClick($event)" class="rounded-md p-2 transition hover:bg-gray-200 dark:hover:bg-gray-700">
                 <MoreVertical class="h-5 w-5 text-gray-700 dark:text-gray-300" />
             </button>
