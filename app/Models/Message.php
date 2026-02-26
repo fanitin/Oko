@@ -16,6 +16,7 @@ class Message extends Model
 
     protected $casts = [
         'edited_at' => 'datetime',
+        'body' => 'encrypted',
     ];
 
     public function user(){

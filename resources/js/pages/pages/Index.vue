@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { type BreadcrumbItem, type User } from '@/types';
@@ -18,7 +17,7 @@ import {
     AtSign,
     Loader2,
     UserPlus,
-    Clock,
+    Clock, Bookmark
 } from 'lucide-vue-next';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -104,6 +103,10 @@ const formatTime = (dateString: string) => {
     }
     return date.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
 };
+
+const routeToProfile = (user: any) => {
+    router.get(route('otherProfile.index', { user: user }));
+};
 </script>
 
 <template>
@@ -145,13 +148,24 @@ const formatTime = (dateString: string) => {
                                 :key="user.id"
                                 class="flex items-center justify-between rounded-lg bg-gray-50 p-3 transition hover:bg-gray-100 dark:bg-gray-800/50 dark:hover:bg-gray-800"
                             >
-                                <div class="flex min-w-0 flex-1 items-center gap-3">
-                                    <Avatar class="h-10 w-10 flex-shrink-0">
-                                        <AvatarImage v-if="user.avatar" :src="user.avatar" />
-                                        <AvatarFallback class="bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300">
+                                <div class="flex min-w-0 flex-1 items-center gap-3 cursor-pointer" @click="routeToProfile(user)">
+                                    <div
+                                        v-if="user.id === $page.props.auth.user.id"
+                                        class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-500 dark:from-purple-600 dark:to-fuchsia-600"
+                                    >
+                                        <Bookmark class="h-6 w-6 text-white" fill="white" />
+                                    </div>
+                                    <img
+                                        v-else-if="user.avatar"
+                                        :src="user.avatar"
+                                        alt="avatar"
+                                        class="h-12 w-12 rounded-full border-2 border-gray-300 object-cover shadow-sm transition-all duration-300 dark:border-gray-700"
+                                    />
+                                    <div v-else class="flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 text-purple-700 dark:bg-purple-800/50 dark:text-purple-300 shadow-sm transition-all duration-300">
+                                        <span class="text-lg font-bold text-gray-700 dark:text-gray-300">
                                             {{ getInitials(user.name) }}
-                                        </AvatarFallback>
-                                    </Avatar>
+                                        </span>
+                                    </div>
                                     <div class="min-w-0 flex-1">
                                         <p class="truncate font-medium text-gray-900 dark:text-gray-100">
                                             {{ user.name }}
@@ -164,7 +178,7 @@ const formatTime = (dateString: string) => {
                                 <Button
                                     size="sm"
                                     @click="startChat(user.chatId, user.id)"
-                                    class="ml-2 flex-shrink-0 bg-purple-600 hover:bg-purple-700 dark:bg-purple-600 dark:hover:bg-purple-500"
+                                    class="ml-2 flex-shrink-0 bg-purple-600 hover:bg-purple-700 dark:bg-purple-600 dark:hover:bg-purple-500 text-purple-100 dark:text-purple-50"
                                 >
                                     <MessageSquarePlus class="h-4 w-4 md:mr-1" />
                                     <span class="hidden md:inline">Message</span>
@@ -204,7 +218,6 @@ const formatTime = (dateString: string) => {
                     </CardContent>
                 </Card>
 
-                <!-- Recent Chats Section -->
                 <Card class="flex flex-col border-gray-200 dark:border-gray-800">
                     <CardHeader class="flex flex-shrink-0 flex-row items-center justify-between">
                         <div>
@@ -225,12 +238,23 @@ const formatTime = (dateString: string) => {
                                 :href="`/chat/${chat.id}`"
                                 class="flex items-center gap-3 rounded-lg bg-gray-50 p-3 transition hover:bg-gray-100 dark:bg-gray-800/50 dark:hover:bg-gray-800"
                             >
-                                <Avatar class="h-10 w-10 flex-shrink-0 md:h-12 md:w-12">
-                                    <AvatarImage v-if="chat.avatar" :src="chat.avatar" />
-                                    <AvatarFallback class="bg-gradient-to-br from-purple-500 to-violet-600 text-white">
-                                        {{ getInitials(chat.name) }}
-                                    </AvatarFallback>
-                                </Avatar>
+                                <div
+                                    v-if="chat.type === 'self'"
+                                    class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-500 dark:from-purple-600 dark:to-fuchsia-600"
+                                >
+                                    <Bookmark class="h-6 w-6 text-white" fill="white" />
+                                </div>
+                                <img
+                                    v-else-if="chat.avatar"
+                                    :src="chat.avatar"
+                                    alt="avatar"
+                                    class="h-12 w-12 rounded-full border-2 border-gray-300 object-cover shadow-sm transition-all duration-300 dark:border-gray-700"
+                                />
+                                <div v-else class="flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 text-purple-700 dark:bg-purple-800/50 dark:text-purple-300 shadow-sm transition-all duration-300">
+                                        <span class="text-lg font-bold text-gray-700 dark:text-gray-300">
+                                            {{ getInitials(chat.name) }}
+                                        </span>
+                                </div>
                                 <div class="min-w-0 flex-1">
                                     <div class="flex items-center justify-between gap-2">
                                         <p class="truncate font-medium text-gray-900 dark:text-gray-100">
@@ -273,7 +297,6 @@ const formatTime = (dateString: string) => {
 </template>
 
 <style scoped>
-/* Custom scrollbar */
 .overflow-y-auto::-webkit-scrollbar {
     width: 6px;
 }

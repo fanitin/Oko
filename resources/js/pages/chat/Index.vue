@@ -11,6 +11,7 @@ import { editState } from '@/lib/custom/states/editState';
 import { mainPopupState } from '@/lib/custom/states/mainPopupState';
 import { replyState } from '@/lib/custom/states/replyState';
 import { sidebarState } from '@/lib/custom/states/sidebarState';
+import { fileState, addFiles, clearFiles } from '@/lib/custom/states/fileState';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, usePage } from '@inertiajs/vue3';
 import { useEcho } from '@laravel/echo-vue';
@@ -18,6 +19,8 @@ import axios from 'axios';
 import { debounce } from 'lodash-es';
 import { ArrowDown, MessageCircle, Sparkles } from 'lucide-vue-next';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import MultimediaUploader from "@/components/custom/chat/MultimediaUploader.vue";
+import MediaPreviewBar from '@/components/custom/chat/MediaPreviewBar.vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -62,6 +65,8 @@ const messagesListRef = ref<InstanceType<typeof MessagesList> | null>(null);
 const isUserAtBottom = ref(true);
 const newMessagesCount = ref(0);
 const pendingMessages = ref(false);
+
+const isEditMode = computed(() => !!editState.message);
 
 const messagesWithMeta = computed(() => {
     if (!Array.isArray(messages.value)) return [];
@@ -110,6 +115,12 @@ watch(
         }
     },
 );
+
+watch(isEditMode, (val) => {
+    if (val && fileState.files.length > 0) {
+        clearFiles();
+    }
+});
 
 const handleNewMessage = (msg: any, isFromMe: boolean) => {
     messages.value.push({
@@ -189,39 +200,48 @@ const handleEmojiSelect = (emoji: string) => {
     });
 };
 
-const send = () => {
-    if (!message.value.trim()) return;
+function handleFilesSelected(files: File[]) {
+    addFiles(files);
+}
+
+const send = async () => {
+    if (!message.value.trim() && fileState.files.length === 0) return;
+
+    const formData = new FormData();
+    formData.append('body', message.value);
+    formData.append('reply_for_message_id', replyState.message?.id ? String(replyState.message.id) : '');
+
+    if (!isEditMode.value) {
+        fileState.files.forEach((f, idx) => {
+            formData.append('media[' + idx + ']', f.file);
+        });
+    }
 
     if (editState.message) {
-        axios
-            .post(route('chat.messages.update', { chat: props.chat.id, message: editState.message.id }), {
-                body: message.value,
-            })
-            .then((response) => {
-                const index = messages.value.findIndex((msg) => msg.id === response.data.data.id);
-                if (index !== -1) {
-                    messages.value[index] = {
-                        ...response.data.data,
-                        isFromMe: true,
-                    };
-                }
-            });
-
+        await axios.post(route('chat.messages.update', { chat: props.chat.id, message: editState.message.id }), formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        }).then((response) => {
+            const index = messages.value.findIndex((msg) => msg.id === response.data.data.id);
+            if (index !== -1) {
+                messages.value[index] = {
+                    ...response.data.data,
+                    isFromMe: true,
+                };
+            }
+        });
         editState.message = null;
         message.value = '';
+        clearFiles();
         return;
     }
-    axios
-        .post(route('chat.messages.store', props.chat.id), {
-            body: message.value,
-            reply_for_message_id: replyState.message?.id ?? null,
-        })
-        .then((response) => {
-            handleNewMessage(response.data.data, true);
-        });
-
+    await axios.post(route('chat.messages.store', props.chat.id), formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    }).then((response) => {
+        handleNewMessage(response.data.data, true);
+    });
     replyState.message = null;
     message.value = '';
+    clearFiles();
 };
 
 const fetchMessages = async () => {
@@ -380,8 +400,10 @@ const scrollToBottom = () => {
             <div class="border-t-2 border-gray-300 bg-gray-50 p-3 shadow-sm dark:border-gray-700 dark:bg-gray-900">
                 <ReplyPreview />
                 <EditPreview />
+                <MediaPreviewBar />
                 <form @submit.prevent="send" class="flex items-center gap-3">
                     <Emoji @select="handleEmojiSelect" />
+                    <MultimediaUploader @files-selected="handleFilesSelected" v-if="!isEditMode" />
 
                     <input
                         ref="inputRef"

@@ -104,7 +104,7 @@ watch(
 
 <template>
     <div class="relative w-full group">
-        <div v-if="total > 0" class="relative w-full overflow-hidden rounded-2xl aspect-square shadow-lg">
+        <div v-if="total > 0" class="relative w-full overflow-hidden rounded-2xl aspect-square shadow-lg flex">
             <div class="flex transition-transform duration-500 ease-in-out" :style="{ transform: `translateX(${slideX}%)` }">
                 <div v-for="(avatar, index) in visibleAvatars" :key="avatar.id" class="relative w-full flex-shrink-0">
                     <img :src="avatar.path" alt="User Avatar" class="h-full w-full object-cover" />

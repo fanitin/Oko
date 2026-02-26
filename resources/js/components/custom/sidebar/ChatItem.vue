@@ -54,8 +54,6 @@ const safeChat = computed(() => ({
     type: props.chat.type ?? 'private',
 }));
 
-const firstLetter = computed(() => (safeChat.value.name ? safeChat.value.name.charAt(0) : '?'));
-
 const lastMessageTime = computed(() => {
     const created = safeChat.value.lastMessage?.created_at;
     if (!created) return '';
@@ -79,6 +77,16 @@ const isOnline = computed(() => {
 });
 
 const isSelfChat = computed(() => safeChat.value.type === 'self');
+
+const getInitials = (name: string) => {
+    if (!name) return '?';
+    return name
+        .split(' ')
+        .map((n) => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2);
+};
 </script>
 
 <template>
@@ -102,8 +110,10 @@ const isSelfChat = computed(() => safeChat.value.type === 'self');
                     alt="avatar"
                     class="h-12 w-12 rounded-full border-2 border-gray-300 object-cover shadow-sm transition-all duration-300 dark:border-gray-700"
                 />
-                <div v-else class="flex h-12 w-12 items-center justify-center rounded-full bg-gray-200 border-2 border-gray-300 shadow-sm transition-all duration-300 dark:bg-gray-600 dark:border-gray-700">
-                    <span class="text-lg font-bold text-gray-700 dark:text-gray-300">{{ firstLetter }}</span>
+                <div v-else class="flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 text-purple-700 dark:bg-purple-800/50 dark:text-purple-300 shadow-sm transition-all duration-300">
+                    <span class="text-lg font-bold text-gray-700 dark:text-gray-300">
+                        {{ getInitials(safeChat.name) }}
+                    </span>
                 </div>
                 <span
                     v-if="isOnline && !isSelfChat"

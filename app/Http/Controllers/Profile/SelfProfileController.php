@@ -17,6 +17,7 @@ class SelfProfileController extends Controller
         $user = auth()->user()->load('mainAvatar', 'avatars');
         $userRes = new UserResource($user);
         $chatID = $user->chats()
+            ->where('is_self', true)
             ->whereHas('users', function ($query) {
                 $query->where('user_id', auth()->id());
             })

@@ -48,6 +48,10 @@ class ChatController extends Controller
             }
         }
 
+        if($request->query('user')) {
+            return redirect()->route('chat.show', ['chat' => $chat->id]);
+        }
+
         return Inertia::render('chat/Index', [
             'chat' => (new ChatResource(
                 $chat->load([
