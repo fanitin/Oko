@@ -35,7 +35,7 @@ class MessageController extends Controller
             $cacheKey = "chat:{$chat->id}:messages:first:{$limit}";
 
             $messages = Cache::tags(["chat:{$chat->id}", "messages"])
-                ->remember($cacheKey, 60, function () use ($chat, $limit) {
+                ->remember($cacheKey, 86400, function () use ($chat, $limit) {
 
                     return $chat->messages()
                         ->with(['user.mainAvatar', 'media', 'replyTo.user'])
@@ -182,7 +182,7 @@ class MessageController extends Controller
         $message->edited_at = now();
         $message->save();
         Cache::tags(["chat:{$chat->id}", "messages"])->flush();
-        
+
         $message->load('user.mainAvatar', 'media', 'replyTo.user', 'chat.users');
 
         broadcast(new MessageEdited($message))->toOthers();
