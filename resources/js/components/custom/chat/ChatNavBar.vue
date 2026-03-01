@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { MoreVertical, Search, Bookmark } from 'lucide-vue-next';
+import { MoreVertical, Bookmark } from 'lucide-vue-next';
 import { computed } from 'vue';
 import { sidebarState } from '@/lib/custom/states/sidebarState';
 import { chatContextMenu } from '@/lib/custom/chatContextMenu';

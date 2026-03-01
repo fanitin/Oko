@@ -14,6 +14,7 @@ use App\Models\Message;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class MessageController extends Controller
 {
@@ -29,17 +30,31 @@ class MessageController extends Controller
         $limit = $request->input('limit', 50);
         $cursor = $request->input('cursor');
 
-        $query = $chat->messages()
-            ->with(['user.mainAvatar', 'media', 'replyTo.user'])
-            ->latest('id');
+        if (!$cursor) {
 
-        if ($cursor) {
-            $query->where('id', '<', $cursor);
+            $cacheKey = "chat:{$chat->id}:messages:first:{$limit}";
+
+            $messages = Cache::tags(["chat:{$chat->id}", "messages"])
+                ->remember($cacheKey, 60, function () use ($chat, $limit) {
+
+                    return $chat->messages()
+                        ->with(['user.mainAvatar', 'media', 'replyTo.user'])
+                        ->latest('id')
+                        ->take($limit)
+                        ->get()
+                        ->reverse();
+                });
+
+        } else {
+
+            $messages = $chat->messages()
+                ->with(['user.mainAvatar', 'media', 'replyTo.user'])
+                ->where('id', '<', $cursor)
+                ->latest('id')
+                ->take($limit)
+                ->get()
+                ->reverse();
         }
-
-        $messages = $query->take($limit)
-            ->get()
-            ->reverse();
 
         $collection = new MessageCollection($messages);
         $collection->chatUsers = $chat->users()->get();
@@ -94,6 +109,7 @@ class MessageController extends Controller
         ]);
 
         $message->load('user.mainAvatar', 'media', 'replyTo.user', 'chat.users');
+        Cache::tags(["chat:{$chat->id}", "messages"])->flush();
 
         broadcast(new MessageSent($message))->toOthers();
 
@@ -129,6 +145,7 @@ class MessageController extends Controller
         $chatUsers = $chat->users;
 
         $message->delete();
+        Cache::tags(["chat:{$chat->id}", "messages"])->flush();
 
         broadcast(new MessageDeleted($deletedMessageId, $originalUserId, $chat->id, $newLastMessage, $isMessageUnread, $chatUsers));
 
@@ -164,7 +181,8 @@ class MessageController extends Controller
         $message->body = $validated['body'];
         $message->edited_at = now();
         $message->save();
-
+        Cache::tags(["chat:{$chat->id}", "messages"])->flush();
+        
         $message->load('user.mainAvatar', 'media', 'replyTo.user', 'chat.users');
 
         broadcast(new MessageEdited($message))->toOthers();

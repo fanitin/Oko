@@ -20,7 +20,7 @@ class HomeController extends Controller
 
     public function index(): Response
     {
-        $recentChats = $this->chatListService->getForSidebar()->take(20);
+        $recentChats = $this->chatListService->getForHome()->take(20);
 
         return Inertia::render('pages/Index', [
             'recentChats' => $recentChats,

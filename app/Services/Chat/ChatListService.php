@@ -33,6 +33,31 @@ class ChatListService
             ->values();
     }
 
+    public function getForHome()
+    {
+        $userId = Auth::id();
+
+        $chats = Chat::query()
+            ->select('chats.*')
+            ->join('chat_users', 'chat_users.chat_id', '=', 'chats.id')
+            ->leftJoin('messages', 'messages.chat_id', '=', 'chats.id')
+            ->where('chat_users.user_id', $userId)
+            ->groupBy('chats.id', 'chat_users.is_pinned')
+            ->havingRaw('COUNT(messages.id) > 0')
+            ->orderByRaw('MAX(messages.created_at) DESC')
+            ->orderByDesc('chats.created_at')
+            ->with([
+                'lastMessage.chat.users',
+                'chatUsers.user.mainAvatar',
+                'chatAvatars',
+                'messages:id,chat_id',
+            ])
+            ->get();
+
+        return $chats->map(fn ($chat) => $this->mapChat($chat, $userId))
+            ->values();
+    }
+
     public function mapChatForUser(Chat $chat, int $userId): array
     {
         return $this->mapChat($chat, $userId);
