@@ -161,7 +161,7 @@ const routeToProfile = (user: any) => {
                                         alt="avatar"
                                         class="h-12 w-12 rounded-full border-2 border-gray-300 object-cover shadow-sm transition-all duration-300 dark:border-gray-700"
                                     />
-                                    <div v-else class="flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 text-purple-700 dark:bg-purple-800/50 dark:text-purple-300 shadow-sm transition-all duration-300">
+                                    <div v-else class="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-700 dark:bg-purple-800/50 dark:text-purple-300 shadow-sm transition-all duration-300">
                                         <span class="text-lg font-bold text-gray-700 dark:text-gray-300">
                                             {{ getInitials(user.name) }}
                                         </span>
@@ -201,8 +201,8 @@ const routeToProfile = (user: any) => {
                             v-else-if="!searchQuery"
                             class="mt-4 flex flex-1 flex-col items-center justify-center py-8 text-center"
                         >
-                            <div class="mb-3 rounded-full bg-purple-100 p-4 dark:bg-purple-900/30">
-                                <Search class="h-8 w-8 text-purple-500" />
+                            <div class="mb-3 rounded-full bg-green-100 p-4 dark:bg-purple-900/30">
+                                <Search class="h-8 w-8 text-green-500" />
                             </div>
                             <p class="text-gray-600 dark:text-gray-300">Start typing to search</p>
                             <div class="mt-2 flex gap-2 text-xs text-gray-400 dark:text-gray-500">
@@ -240,7 +240,7 @@ const routeToProfile = (user: any) => {
                             >
                                 <div
                                     v-if="chat.type === 'self'"
-                                    class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-500 dark:from-purple-600 dark:to-fuchsia-600"
+                                    class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-green-400 to-green-600 dark:from-purple-600 dark:to-fuchsia-600"
                                 >
                                     <Bookmark class="h-6 w-6 text-white" fill="white" />
                                 </div>
@@ -250,7 +250,7 @@ const routeToProfile = (user: any) => {
                                     alt="avatar"
                                     class="h-12 w-12 rounded-full border-2 border-gray-300 object-cover shadow-sm transition-all duration-300 dark:border-gray-700"
                                 />
-                                <div v-else class="flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 text-purple-700 dark:bg-purple-800/50 dark:text-purple-300 shadow-sm transition-all duration-300">
+                                <div v-else class="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-700 dark:bg-purple-800/50 dark:text-purple-300 shadow-sm transition-all duration-300">
                                         <span class="text-lg font-bold text-gray-700 dark:text-gray-300">
                                             {{ getInitials(chat.name) }}
                                         </span>

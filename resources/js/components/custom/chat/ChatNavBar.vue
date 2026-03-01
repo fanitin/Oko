@@ -79,7 +79,7 @@ function onMenuClick(e: MouseEvent) {
                 <div class="relative">
                     <div
                         v-if="isSelfChat"
-                        class="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-500 dark:from-purple-600 dark:to-fuchsia-600"
+                        class="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-green-400 to-green-600 dark:from-purple-600 dark:to-fuchsia-600"
                     >
                         <Bookmark class="h-5 w-5 text-white" fill="white" />
                     </div>
@@ -89,8 +89,8 @@ function onMenuClick(e: MouseEvent) {
                         alt="avatar"
                         class="h-10 w-10 rounded-full border-2 border-gray-300 object-cover shadow-sm dark:border-gray-700"
                     />
-                    <div v-else class="flex h-10 w-10 items-center justify-center rounded-full   shadow-sm bg-purple-100 text-purple-700 dark:bg-purple-800/50 dark:text-purple-300">
-                        {{ firstLetter }}
+                    <div v-else class="flex h-10 w-10 items-center justify-center rounded-full shadow-sm bg-green-100 text-green-700 dark:bg-purple-800/50 dark:text-purple-300">
+                        {{ getInitials(chatName) }}
                     </div>
 
                     <span

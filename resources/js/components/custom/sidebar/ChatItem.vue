@@ -100,7 +100,7 @@ const getInitials = (name: string) => {
             <div class="relative flex-shrink-0">
                 <div
                     v-if="isSelfChat"
-                    class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-500 dark:from-purple-600 dark:to-fuchsia-600"
+                    class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-green-400 to-green-600 dark:from-purple-600 dark:to-fuchsia-600"
                 >
                     <Bookmark class="h-6 w-6 text-white" fill="white" />
                 </div>
@@ -110,7 +110,7 @@ const getInitials = (name: string) => {
                     alt="avatar"
                     class="h-12 w-12 rounded-full border-2 border-gray-300 object-cover shadow-sm transition-all duration-300 dark:border-gray-700"
                 />
-                <div v-else class="flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 text-purple-700 dark:bg-purple-800/50 dark:text-purple-300 shadow-sm transition-all duration-300">
+                <div v-else class="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-700 dark:bg-purple-800/50 dark:text-purple-300 shadow-sm transition-all duration-300">
                     <span class="text-lg font-bold text-gray-700 dark:text-gray-300">
                         {{ getInitials(safeChat.name) }}
                     </span>

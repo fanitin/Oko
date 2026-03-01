@@ -50,11 +50,11 @@ class SelfProfileController extends Controller
     }
 
     public function setAsMain(Request $request){
-        $id = $request->input('id');
+        $avatarId = $request->input('id');
         $user = auth()->user();
 
         UserAvatar::forUser($user)->where('is_main', 1)->update(['is_main' => 0]);
-        $avatar = UserAvatar::where('id', $id)->first();
+        $avatar = UserAvatar::where('id', $avatarId)->first();
         $avatar->update(['is_main' => 1]);
         $avatars = $user->avatars()->get();
         return response()->json([
