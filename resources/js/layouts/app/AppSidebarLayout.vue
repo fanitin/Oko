@@ -4,9 +4,10 @@ import AppShell from '@/components/AppShell.vue';
 import AppSidebar from '@/components/AppSidebar.vue';
 import type { BreadcrumbItemType } from '@/types';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { onMounted, onUnmounted } from 'vue';
+import { onMounted, onUnmounted, watch } from 'vue';
 import { useEchoPresence } from '@laravel/echo-vue';
 import { sidebarState } from '@/lib/custom/states/sidebarState';
+import { useNotifications } from '@/composables/useNotifications';
 
 interface Props {
     breadcrumbs?: BreadcrumbItemType[];
@@ -17,6 +18,13 @@ withDefaults(defineProps<Props>(), {
 });
 
 const { channel, leave } = useEchoPresence('online');
+const { resetTitle } = useNotifications();
+
+const handleFocus = () => {
+    if (sidebarState.activeChatId) {
+        resetTitle();
+    }
+};
 
 onMounted(() => {
     const presence = channel();
@@ -32,10 +40,19 @@ onMounted(() => {
     presence.leaving((user: any) => {
         sidebarState.removeOnlineUser(user.id);
     });
+
+    window.addEventListener('focus', handleFocus);
 });
 
 onUnmounted(() => {
     leave();
+    window.removeEventListener('focus', handleFocus);
+});
+
+watch(() => sidebarState.activeChatId, () => {
+    if (document.hasFocus()) {
+        resetTitle();
+    }
 });
 </script>
 

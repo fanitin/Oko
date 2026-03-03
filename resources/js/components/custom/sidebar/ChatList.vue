@@ -6,12 +6,15 @@ import { usePage } from '@inertiajs/vue3';
 import { useEcho } from '@laravel/echo-vue';
 import { MessageSquare, SearchX } from 'lucide-vue-next';
 import { useSidebar } from '@/components/ui/sidebar';
+import { useNotifications } from '@/composables/useNotifications';
 
 const { state } = useSidebar();
 const isCollapsed = computed(() => state.value === 'collapsed');
 
 const page = usePage();
 const user = ref(page.props.auth.user);
+
+const { notify } = useNotifications();
 
 if (!sidebarState.chats.length) {
     sidebarState.chats = page.props.chats.map((c: any) => ({
@@ -28,6 +31,19 @@ const selectChat = (chatId: number) => {
 
 useEcho(`user.${user.value.id}`, '.message.sent', (e: any) => {
     sidebarState.updateFromMessage(e.sidebar, user.value.id);
+
+    if (e.sidebar.senderId !== user.value.id) {
+        const chat = sidebarState.chats.find((c) => c.id === e.sidebar.chatId) ||
+                     sidebarState.allChats.find((c) => c.id === e.sidebar.chatId);
+
+        const isActiveChat = sidebarState.activeChatId === e.sidebar.chatId;
+        const isWindowFocused = document.hasFocus();
+        const isMuted = chat?.settings?.isMuted;
+
+        if (!isMuted && (!isActiveChat || !isWindowFocused)) {
+            notify();
+        }
+    }
 });
 
 useEcho(`user.${user.value.id}`, '.message.deleted', (e: any) => {
@@ -56,7 +72,6 @@ useEcho(`user.${user.value.id}`, '.chat.created', (e: any) => {
 </script>
 
 <template>
-    <!-- Search results info -->
     <div v-if="sidebarState.isSearching && chats.length > 0" class="px-4 py-2 text-xs text-gray-600 dark:text-gray-400">
         Found {{ chats.length }} chat{{ chats.length !== 1 ? 's' : '' }}
     </div>
@@ -77,7 +92,6 @@ useEcho(`user.${user.value.id}`, '.chat.created', (e: any) => {
         />
     </div>
 
-    <!-- No results from search -->
     <div v-else-if="sidebarState.isSearching" class="flex h-full flex-col items-center justify-center p-6">
         <div class="relative mb-6">
             <div class="absolute inset-0 animate-pulse rounded-full bg-gray-500/10 dark:bg-gray-500/5 blur-3xl"></div>
@@ -95,7 +109,6 @@ useEcho(`user.${user.value.id}`, '.chat.created', (e: any) => {
         </p>
     </div>
 
-    <!-- No chats at all -->
     <div v-else class="flex h-full flex-col items-center justify-center p-6">
         <div class="relative mb-6">
             <div class="absolute inset-0 animate-pulse rounded-full bg-purple-500/10 dark:bg-purple-500/5 blur-3xl"></div>
