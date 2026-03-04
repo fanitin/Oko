@@ -205,20 +205,13 @@ function handleFilesSelected(files: File[]) {
 }
 
 const send = async () => {
-    if (!message.value.trim() && fileState.files.length === 0) return;
+    if (isEditMode.value) {
+        if (!message.value.trim()) return;
 
-    const formData = new FormData();
-    formData.append('body', message.value);
-    formData.append('reply_for_message_id', replyState.message?.id ? String(replyState.message.id) : '');
+        const formData = new FormData();
+        formData.append('body', message.value);
 
-    if (!isEditMode.value) {
-        fileState.files.forEach((f, idx) => {
-            formData.append('media[' + idx + ']', f.file);
-        });
-    }
-
-    if (editState.message) {
-        await axios.post(route('chat.messages.update', { chat: props.chat.id, message: editState.message.id }), formData, {
+        await axios.post(route('chat.messages.update', { chat: props.chat.id, message: editState.message!.id }), formData, {
             headers: { 'Content-Type': 'multipart/form-data' },
         }).then((response) => {
             const index = messages.value.findIndex((msg) => msg.id === response.data.data.id);
@@ -231,14 +224,32 @@ const send = async () => {
         });
         editState.message = null;
         message.value = '';
-        clearFiles();
         return;
     }
+
+    if (!message.value.trim() && fileState.files.length === 0) return;
+
+    const formData = new FormData();
+    formData.append('body', message.value);
+    formData.append('reply_for_message_id', replyState.message?.id ? String(replyState.message.id) : '');
+
+    fileState.files.forEach((f, idx) => {
+        formData.append('media[' + idx + ']', f.file);
+    });
+
     await axios.post(route('chat.messages.store', props.chat.id), formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
     }).then((response) => {
         handleNewMessage(response.data.data, true);
+    }).catch((error) => {
+        if (error.response && error.response.status === 422) {
+            const msg = error.response.data.message || 'Validation error';
+            mainPopupState.show(msg, 'error');
+        } else {
+            mainPopupState.show('Failed to send message.', 'error');
+        }
     });
+
     replyState.message = null;
     message.value = '';
     clearFiles();

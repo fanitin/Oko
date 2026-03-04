@@ -18,13 +18,20 @@ class MessageMedia extends Model
         'meta' => 'array',
     ];
 
+    protected $appends = ['url'];
+
     protected static function booted()
     {
         static::deleting(function ($media) {
             if ($media->path) {
-                Storage::delete($media->path);
+                Storage::disk('public')->delete($media->path);
             }
         });
+    }
+
+    public function getUrlAttribute()
+    {
+        return asset('storage/' . $this->path);
     }
 
     public function message(){

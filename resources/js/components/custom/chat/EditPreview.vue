@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { editState } from '@/lib/custom/states/editState'
+import { clearFiles } from '@/lib/custom/states/fileState'
 import { Pencil, X } from 'lucide-vue-next'
 
 function cancelEdit() {
     editState.message = null
+    clearFiles()
 }
 </script>
 

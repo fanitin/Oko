@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { Check, CheckCheck } from 'lucide-vue-next';
+import { Check, CheckCheck, Download } from 'lucide-vue-next';
 import { messageContextMenu } from '@/lib/custom/messageContextMenu';
 import { onUnmounted, ref } from 'vue';
+import MediaViewer from './MediaViewer.vue';
 
 const props = defineProps<{
     message: {
@@ -24,12 +25,16 @@ const props = defineProps<{
             username: string;
             avatar: string | null;
         };
-        media?: {
+        media?: Array<{
             id: number;
-            type: string;
+            type: 'image' | 'video' | 'file';
             path: string;
-            meta: Record<string, any>;
-        };
+            meta: {
+                original_name?: string;
+                size?: number;
+                mime_type?: string;
+            };
+        }>;
     };
     chatType: 'self' | 'private' | 'group';
 }>();
@@ -37,6 +42,14 @@ const props = defineProps<{
 const emit = defineEmits(['fetch-and-scroll']);
 const elRef = ref<HTMLElement | null>(null);
 let observer: IntersectionObserver | null = null;
+
+const viewerOpen = ref(false)
+const viewerIndex = ref(0)
+
+const openMediaViewer = (index: number) => {
+    viewerIndex.value = index
+    viewerOpen.value = true
+}
 
 const scrollToReply = (id: number) => {
     const el = document.getElementById(`message-wrapper-${id}`);
@@ -74,6 +87,13 @@ function formatTime(dateStr: string) {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
+function formatFileSize(bytes?: number) {
+    if (!bytes) return 'Unknown'
+    const mb = bytes / (1024 * 1024)
+    if (mb < 1) return (bytes / 1024).toFixed(1) + ' KB'
+    return mb.toFixed(2) + ' MB'
+}
+
 function openMenu(e: MouseEvent) {
     const menuWidth = 192;
     const menuHeight = 150;
@@ -101,6 +121,14 @@ function openMenu(e: MouseEvent) {
         },
     };
 }
+
+const downloadFile = (media: any) => {
+    const link = document.createElement('a')
+    link.href = media.path
+    link.download = media.meta.original_name || 'download'
+    link.click()
+}
+
 </script>
 
 <template>
@@ -145,7 +173,87 @@ function openMenu(e: MouseEvent) {
                     {{ message.user.username }}
                 </div>
 
-                <div class="pr-3 pb-1 text-base leading-relaxed">
+                <div v-if="message.media && message.media.length > 0" class="mb-2">
+                    <div
+                        class="grid gap-1"
+                        :class="{
+                            'grid-cols-1': message.media.length === 1,
+                            'grid-cols-2': message.media.length === 2 || message.media.length === 4,
+                            'grid-cols-3': message.media.length >= 3 && message.media.length !== 4,
+                        }"
+                    >
+                        <template v-for="(media, idx) in message.media.slice(0, 9)" :key="media.id">
+                            <div
+                                v-if="media.type === 'image'"
+                                @click="openMediaViewer(idx)"
+                                class="relative cursor-pointer overflow-hidden rounded-lg group"
+                                :class="{
+                                    'aspect-square': message.media.length > 1,
+                                    'max-h-96 w-full': message.media.length === 1,
+                                }"
+                            >
+                                <img
+                                    :src="media.path"
+                                    :alt="media.meta.original_name || 'Image'"
+                                    class="w-full h-full object-cover transition group-hover:brightness-90"
+                                />
+                                <div v-if="idx === 8 && message.media.length > 9" class="absolute inset-0 bg-black/60 flex items-center justify-center text-white text-2xl font-bold">
+                                    +{{ message.media.length - 9 }}
+                                </div>
+                            </div>
+
+                            <div
+                                v-else-if="media.type === 'video'"
+                                @click="openMediaViewer(idx)"
+                                class="relative cursor-pointer overflow-hidden rounded-lg group"
+                                :class="{
+                                    'aspect-video': true,
+                                }"
+                            >
+                                <video
+                                    :src="media.path"
+                                    class="w-full h-full object-cover"
+                                    preload="metadata"
+                                />
+                                <div class="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition flex items-center justify-center">
+                                    <div class="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
+                                        <svg class="w-8 h-8 text-gray-800 ml-1" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M8 5v14l11-7z"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div
+                                v-else
+                                class="flex items-center gap-2 p-3 rounded-lg bg-gray-100/50 dark:bg-gray-700/50 border border-gray-200/50 dark:border-gray-600/50"
+                            >
+                                <div class="flex-shrink-0">
+                                    <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-sm font-medium truncate" :class="message.isFromMe ? 'text-white' : 'text-gray-900 dark:text-gray-100'">
+                                        {{ media.meta.original_name }}
+                                    </div>
+                                    <div class="text-xs" :class="message.isFromMe ? 'text-gray-200/80' : 'text-gray-500 dark:text-gray-400'">
+                                        {{ formatFileSize(media.meta.size) }}
+                                    </div>
+                                </div>
+                                <button
+                                    @click="downloadFile(media)"
+                                    class="flex-shrink-0 p-2 rounded-full transition"
+                                    :class="message.isFromMe ? 'hover:bg-white/20 text-white' : 'hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300'"
+                                >
+                                    <Download :size="18" />
+                                </button>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <div v-if="message.body" class="pr-3 pb-1 text-base leading-relaxed">
                     {{ message.body }}
                 </div>
 
@@ -168,6 +276,15 @@ function openMenu(e: MouseEvent) {
             </div>
         </div>
     </div>
+
+    <Teleport to="body">
+        <MediaViewer
+            v-if="viewerOpen && message.media && message.media.length > 0"
+            :media="message.media"
+            :initial-index="viewerIndex"
+            @close="viewerOpen = false"
+        />
+    </Teleport>
 </template>
 
 <style scoped>

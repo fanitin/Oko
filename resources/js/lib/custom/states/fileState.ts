@@ -16,9 +16,17 @@ export const fileState = reactive<FileState>({
 })
 
 export function addFiles(newFiles: File[]) {
-    newFiles.forEach(file => {
-        if (file.size > 3 * 1024 * 1024) {
-            mainPopupState.show('File size exceeds 3MB limit: ' + file.name, 'error')
+    if (fileState.files.length >= 10) {
+        mainPopupState.show('Maximum 10 files allowed', 'error')
+        return
+    }
+
+    const remainingSlots = 10 - fileState.files.length
+    const filesToAdd = Array.from(newFiles).slice(0, remainingSlots)
+
+    filesToAdd.forEach(file => {
+        if (file.size > 10 * 1024 * 1024) {
+            mainPopupState.show('File size exceeds 10MB limit: ' + file.name, 'error')
             return
         }
 
@@ -32,6 +40,10 @@ export function addFiles(newFiles: File[]) {
             type,
         })
     })
+
+    if (newFiles.length > remainingSlots) {
+        mainPopupState.show(`Only ${remainingSlots} files added (max 10 total)`, 'warning')
+    }
 }
 
 export function removeFile(index: number) {

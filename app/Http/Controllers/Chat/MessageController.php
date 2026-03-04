@@ -94,26 +94,68 @@ class MessageController extends Controller
 
     public function store(Request $request, Chat $chat)
     {
-        $validated = $request->validate([
-            'body' => 'nullable|string',
-            'media' => 'nullable|array',
-            'media.*' => 'file|mimes:jpg,jpeg,png,gif,mp4,avi,mov|max:10240',
-            'reply_for_message_id' => 'nullable|exists:messages,id',
-        ]);
+        try {
+            $validated = $request->validate([
+                'body' => 'nullable|string',
+                'media' => 'nullable|array|max:10',
+                'media.*' => 'file|mimes:jpg,jpeg,png,gif,mp4,avi,mov,webm,pdf,doc,docx,txt,zip,rar,mp3,wav,ogg,flac,aac|max:10240',
+                'reply_for_message_id' => 'nullable|exists:messages,id',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->errors(),
+            ], 422);
+        }
+
+        if (empty($validated['body']) && empty($validated['media'])) {
+            return response()->json([
+                'message' => 'Message must have text or media',
+                'errors' => ['body' => ['Message must have text or media']],
+            ], 422);
+        }
 
         $message = Message::create([
-            'body' => $validated['body'],
+            'body' => $validated['body'] ?? '',
             'chat_id' => $chat->id,
             'user_id' => auth()->user()->id,
             'reply_for_message_id' => $validated['reply_for_message_id'] ?? null,
         ]);
 
+        if (isset($validated['media'])) {
+            foreach ($validated['media'] as $file) {
+                $path = $file->store('message-media/' . $chat->id, 'public');
+
+                $mediaType = 'file';
+                if (str_starts_with($file->getMimeType(), 'image/')) {
+                    $mediaType = 'image';
+                } elseif (str_starts_with($file->getMimeType(), 'video/')) {
+                    $mediaType = 'video';
+                }
+
+                $message->media()->create([
+                    'media_type' => $mediaType,
+                    'path' => $path,
+                    'meta' => [
+                        'original_name' => $file->getClientOriginalName(),
+                        'mime_type' => $file->getMimeType(),
+                        'size' => $file->getSize(),
+                    ],
+                ]);
+            }
+        }
+
         $message->load('user.mainAvatar', 'media', 'replyTo.user', 'chat.users');
         Cache::tags(["chat:{$chat->id}", "messages"])->flush();
 
+        $isMediaOnly = empty($message->body) && $message->media->count() > 0;
+
         broadcast(new MessageSent($message))->toOthers();
 
-        return new MessageResource($message);
+        return response()->json([
+            'data' => new MessageResource($message),
+            'is_media_only' => $isMediaOnly,
+        ]);
     }
 
     public function delete(Request $request, Chat $chat, Message $message)

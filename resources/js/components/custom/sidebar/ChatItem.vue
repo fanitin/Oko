@@ -3,7 +3,7 @@ import { useSidebar } from '@/components/ui/sidebar';
 import { sidebarState } from '@/lib/custom/states/sidebarState';
 import { Link, usePage } from '@inertiajs/vue3';
 import { format, isThisWeek, isToday } from 'date-fns';
-import { BellOff, Bookmark, Check, CheckCheck, Pin } from 'lucide-vue-next';
+import { BellOff, Bookmark, Check, CheckCheck, Pin, MessageSquare } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 const { state } = useSidebar();
@@ -18,6 +18,7 @@ const props = defineProps<{
             body: string | null;
             status: 'delivered' | 'seen';
             created_at?: string;
+            media?: any[];
         } | null;
         avatar?: string;
         unreadCount?: number;
@@ -44,6 +45,7 @@ const safeChat = computed(() => ({
         body: props.chat.lastMessage?.body ?? 'No messages yet',
         created_at: props.chat.lastMessage?.created_at ?? null,
         status: props.chat.lastMessage?.status,
+        media: props.chat.lastMessage?.media ?? [],
     },
     settings: {
         isPinned: props.chat.settings?.isPinned ?? false,
@@ -158,7 +160,17 @@ const getInitials = (name: string) => {
 
                 <div class="mt-1.5 flex items-center justify-between">
                     <p class="flex-1 truncate text-sm text-gray-600 dark:text-gray-400">
-                        {{ safeChat.lastMessage?.body }}
+                        <template v-if="safeChat.lastMessage?.body && safeChat.lastMessage?.body.trim()">
+                            {{ safeChat.lastMessage.body }}
+                        </template>
+                        <template v-else-if="safeChat.lastMessage && safeChat.lastMessage.media && safeChat.lastMessage.media.length > 0">
+                            <span class="inline-flex items-center gap-1 text-gray-600 dark:text-gray-400 font-bold">
+                                <MessageSquare class="h-4 w-4" /> Media
+                            </span>
+                        </template>
+                        <template v-else>
+                            No messages yet
+                        </template>
                     </p>
                     <div class="ml-2 flex min-w-[70px] items-center justify-end gap-1">
                         <span v-if="isFromMe">
