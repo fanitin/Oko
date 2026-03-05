@@ -57,7 +57,6 @@ watch(searchQuery, (newQuery) => {
                 class="w-full rounded-lg border-2 border-gray-300 bg-white py-2.5 pl-4 pr-10 text-sm text-gray-900 placeholder-gray-500 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-400 dark:focus:border-purple-400 dark:focus:ring-purple-900"
             />
 
-            <!-- Loading spinner -->
             <div
                 v-if="isSearching"
                 class="absolute right-3 top-1/2 -translate-y-1/2"
@@ -65,7 +64,6 @@ watch(searchQuery, (newQuery) => {
                 <Loader2 class="h-4 w-4 animate-spin text-purple-500" />
             </div>
 
-            <!-- Clear button -->
             <button
                 v-else-if="searchQuery"
                 @click="clearSearch"
