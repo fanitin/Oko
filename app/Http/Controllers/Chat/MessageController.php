@@ -15,6 +15,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Validation\ValidationException;
 
 class MessageController extends Controller
 {
@@ -101,7 +102,7 @@ class MessageController extends Controller
                 'media.*' => 'file|mimes:jpg,jpeg,png,gif,mp4,avi,mov,webm,pdf,doc,docx,txt,zip,rar,mp3,wav,ogg,flac,aac|max:10240',
                 'reply_for_message_id' => 'nullable|exists:messages,id',
             ]);
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             return response()->json([
                 'message' => $e->getMessage(),
                 'errors' => $e->errors(),
