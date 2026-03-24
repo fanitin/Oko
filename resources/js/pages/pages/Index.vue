@@ -202,7 +202,7 @@ const routeToProfile = (user: any) => {
                             class="mt-4 flex flex-1 flex-col items-center justify-center py-8 text-center"
                         >
                             <div class="mb-3 rounded-full bg-green-100 p-4 dark:bg-purple-900/30">
-                                <Search class="h-8 w-8 text-green-500" />
+                                <Search class="h-8 w-8 text-green-500 dark:text-purple-500" />
                             </div>
                             <p class="text-gray-600 dark:text-gray-300">Start typing to search</p>
                             <div class="mt-2 flex gap-2 text-xs text-gray-400 dark:text-gray-500">
