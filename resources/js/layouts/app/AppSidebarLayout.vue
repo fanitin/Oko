@@ -60,7 +60,7 @@ watch(() => sidebarState.activeChatId, () => {
     <AppShell variant="sidebar">
         <AppSidebar />
         <AppContent variant="sidebar" class="overflow-x-hidden">
-            <div class="lg:hidden p-2 border-b border-gray-200 dark:border-gray-800">
+            <div class="hidden p-2 border-b border-gray-200 dark:border-gray-800">
                 <SidebarTrigger />
             </div>
             <slot />

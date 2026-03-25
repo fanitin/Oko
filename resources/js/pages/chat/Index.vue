@@ -17,7 +17,7 @@ import { Head, router, usePage } from '@inertiajs/vue3';
 import { useEcho } from '@laravel/echo-vue';
 import axios from 'axios';
 import { debounce } from 'lodash-es';
-import { ArrowDown, MessageCircle, Sparkles } from 'lucide-vue-next';
+import { ArrowDown, MessageCircle } from 'lucide-vue-next';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import MultimediaUploader from "@/components/custom/chat/MultimediaUploader.vue";
 import MediaPreviewBar from '@/components/custom/chat/MediaPreviewBar.vue';
@@ -377,7 +377,6 @@ const scrollToBottom = () => {
                         <p class="mb-6 text-gray-600 dark:text-gray-400">Start a conversation by sending a message below</p>
 
                         <div class="flex items-center justify-center gap-2 text-sm text-gray-500 dark:text-gray-500">
-                            <Sparkles class="h-4 w-4" />
                             <span>Be the first to say hello!</span>
                         </div>
                     </div>
